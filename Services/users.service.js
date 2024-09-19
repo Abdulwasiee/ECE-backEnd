@@ -235,7 +235,7 @@ const updateUserById = async (userId, userData, reqUser) => {
     return validation;
   }
 
-  const {
+  let {
     role_id,
     id_number,
     name,
@@ -258,7 +258,7 @@ const updateUserById = async (userId, userData, reqUser) => {
       };
     }
 
-    // Build the SQL query
+    // Build the SQL query for updating the user in the users table
     let sql = `
       UPDATE users
       SET role_id = ?, id_number = ?, name = ?, email = ?${
@@ -275,66 +275,45 @@ const updateUserById = async (userId, userData, reqUser) => {
     // Execute the update query
     const result = await query(sql, params);
 
-    if (result.affectedRows > 0) {
-      // Handle representative batch assignment
-      if (reqUser.role_id === 5 && role_id !== 5) {
-        // Representatives can only create staff members
-        return {
-          success: false,
-          message: "Representatives can only create staff members.",
-        };
-      }
-
-      // Handle staff batch and course assignment
-      if (role_id === 3) {
-        // Update staff_batches
-        await query(
-          `
+    // Handle staff batch, course, stream, and semester assignments if role is staff (role_id = 3)
+    if (role_id === 3) {
+      // Update staff_batches table
+      await query(
+        `
           INSERT INTO staff_batches (user_id, batch_id, stream_id, semester_id)
           VALUES (?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE batch_id = ?, stream_id = ?, semester_id = ?
         `,
-          [
-            userId,
-            batch_id,
-            stream_id,
-            semester_id,
-            batch_id,
-            stream_id,
-            semester_id,
-          ]
-        );
+        [
+          userId,
+          batch_id,
+          stream_id,
+          semester_id,
+          batch_id,
+          stream_id,
+          semester_id,
+        ]
+      );
 
-        // Update staff_courses if course_id is provided
-        if (course_id) {
-          await query(
-            `
+      // Update staff_courses if course_id is provided
+      if (course_id) {
+        await query(
+          `
             INSERT INTO staff_courses (user_id, course_id, batch_id, stream_id, semester_id)
             VALUES (?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE course_id = ?, batch_id = ?, stream_id = ?, semester_id = ?
           `,
-            [
-              userId,
-              course_id,
-              batch_id,
-              stream_id,
-              semester_id,
-              course_id,
-              batch_id,
-              stream_id,
-              semester_id,
-            ]
-          );
-        }
-      } else if (role_id === 5) {
-        // Representatives should only have batch assignments (no courses)
-        await query(
-          `
-          INSERT INTO student_batches (user_id, batch_id)
-          VALUES (?, ?)
-          ON DUPLICATE KEY UPDATE batch_id = ?
-        `,
-          [userId, batch_id, batch_id]
+          [
+            userId,
+            course_id,
+            batch_id,
+            stream_id,
+            semester_id,
+            course_id,
+            batch_id,
+            stream_id,
+            semester_id,
+          ]
         );
       }
 
