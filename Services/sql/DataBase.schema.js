@@ -47,19 +47,19 @@ const createUsersTable = `
 CREATE TABLE IF NOT EXISTS users (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
   role_id INT,
-  batch_id INT,
-  stream_id INT,
-  semester_id INT,
+  batch_id INT DEFAULT NULL,
+  stream_id INT DEFAULT NULL,
+  semester_id INT DEFAULT NULL,
   id_number VARCHAR(50) UNIQUE,
   name VARCHAR(100),
   email VARCHAR(100) UNIQUE,
   password VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (role_id) REFERENCES roles(role_id),
-  FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
-  FOREIGN KEY (stream_id) REFERENCES streams(stream_id),
-  FOREIGN KEY (semester_id) REFERENCES semesters(semester_id)
+  FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE SET NULL,
+  FOREIGN KEY (batch_id) REFERENCES batches(batch_id) ON DELETE SET NULL,
+  FOREIGN KEY (stream_id) REFERENCES streams(stream_id) ON DELETE SET NULL,
+  FOREIGN KEY (semester_id) REFERENCES semesters(semester_id) ON DELETE SET NULL
 );
 `;
 
@@ -70,11 +70,11 @@ CREATE TABLE IF NOT EXISTS students (
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
   id_number VARCHAR(50) UNIQUE NOT NULL,
-  stream_id INT,
-  batch_id INT,
+  stream_id INT DEFAULT NULL,
+  batch_id INT DEFAULT NULL,
   role_id INT,
-  FOREIGN KEY (stream_id) REFERENCES streams(stream_id),
-  FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
+  FOREIGN KEY (stream_id) REFERENCES streams(stream_id) ON DELETE SET NULL,
+  FOREIGN KEY (batch_id) REFERENCES batches(batch_id) ON DELETE SET NULL,
   FOREIGN KEY (role_id) REFERENCES roles(role_id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -86,13 +86,13 @@ const createBatchCoursesTable = `
 CREATE TABLE IF NOT EXISTS batch_courses (
   batch_course_id INT AUTO_INCREMENT PRIMARY KEY,
   batch_id INT,
-  stream_id INT,
+  stream_id INT DEFAULT NULL,
   semester_id INT,
   course_id INT,
   FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
+  FOREIGN KEY (stream_id) REFERENCES streams(stream_id) ON DELETE SET NULL,
   FOREIGN KEY (semester_id) REFERENCES semesters(semester_id),
-  FOREIGN KEY (course_id) REFERENCES courses(course_id),
-  FOREIGN KEY (stream_id) REFERENCES streams(stream_id)
+  FOREIGN KEY (course_id) REFERENCES courses(course_id)
 );
 `;
 
@@ -102,12 +102,12 @@ CREATE TABLE IF NOT EXISTS staff_batches (
   staff_batch_id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,
   batch_id INT,
-  stream_id INT,
+  stream_id INT DEFAULT NULL,
   semester_id INT,
   FOREIGN KEY (user_id) REFERENCES users(user_id),
   FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
   FOREIGN KEY (semester_id) REFERENCES semesters(semester_id),
-  FOREIGN KEY (stream_id) REFERENCES streams(stream_id)
+  FOREIGN KEY (stream_id) REFERENCES streams(stream_id) ON DELETE SET NULL
 );
 `;
 
@@ -118,13 +118,13 @@ CREATE TABLE IF NOT EXISTS staff_courses (
   user_id INT,
   course_id INT,
   batch_id INT,
-  stream_id INT,
+  stream_id INT DEFAULT NULL,
   semester_id INT,
   FOREIGN KEY (user_id) REFERENCES users(user_id),
   FOREIGN KEY (course_id) REFERENCES courses(course_id),
   FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
   FOREIGN KEY (semester_id) REFERENCES semesters(semester_id),
-  FOREIGN KEY (stream_id) REFERENCES streams(stream_id)
+  FOREIGN KEY (stream_id) REFERENCES streams(stream_id) ON DELETE SET NULL
 );
 `;
 
@@ -164,13 +164,13 @@ CREATE TABLE IF NOT EXISTS materials (
   file_url VARCHAR(255),
   batch_course_id INT,
   semester_id INT,
-  stream_id INT,
+  stream_id INT DEFAULT NULL,
   uploaded_by INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (batch_course_id) REFERENCES batch_courses(batch_course_id),
   FOREIGN KEY (semester_id) REFERENCES semesters(semester_id),
-  FOREIGN KEY (stream_id) REFERENCES streams(stream_id),
+  FOREIGN KEY (stream_id) REFERENCES streams(stream_id) ON DELETE SET NULL,
   FOREIGN KEY (uploaded_by) REFERENCES users(user_id)
 );
 `;
@@ -252,12 +252,12 @@ ON DUPLICATE KEY UPDATE role_id=VALUES(role_id);
 // Combine all queries into an array
 const createTablesQueries = [
   createRolesTable,
-  createStreamsTable,
+  createBatchesTable,
   createSemestersTable,
+  createStreamsTable,
+  createCoursesTable,
   createUsersTable,
   createStudentsTable,
-  createBatchesTable,
-  createCoursesTable,
   createBatchCoursesTable,
   createStaffBatchesTable,
   createStaffCoursesTable,

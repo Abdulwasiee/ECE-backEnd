@@ -4,7 +4,7 @@ const {
   insertAdminUser,
   insertAdminIntoAdminsTable,
 } = require("./sql/DataBase.schema");
-const bcrypt = require("bcrypt");
+
 
 const installation = async () => {
   try {

@@ -229,7 +229,7 @@ const getAllUsers = async (reqUser, role_id, semester_id) => {
   }
 };
 
-const updateUserById = async (userId, userData, reqUser) => {
+const updateUserById = async (userId, userData) => {
   const validation = await validateUserData(userData);
   if (!validation.success) {
     return validation;
