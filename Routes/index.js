@@ -12,7 +12,7 @@ router.use(installRouter);
 router.use(userRouter);
 router.use(loginRouter);
 // router.use(contactRouter);
-// router.use(newsRouter);
+router.use(newsRouter);
 // router.use(courseRouter);
 // router.use(materialRouter);
 // router.use(studentRouter);
