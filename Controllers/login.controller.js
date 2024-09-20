@@ -5,7 +5,7 @@ const loginController = async (req, res) => {
 
   try {
     const response = await loginService(loginData);
-    return response.json({
+    return res.json({
       response,
     });
   } catch (error) {

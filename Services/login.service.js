@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const jwt_secret_key = process.env.SECRETE_KEY;
+const jwt_secret_key = process.env.SECRET_KEY;
 
 const loginService = async (loginData) => {
   const { email, password } = loginData;
@@ -31,11 +31,21 @@ const loginService = async (loginData) => {
       if (!isPasswordValid) {
         return { success: false, message: "Invalid email or password." };
       }
-
+      let batch_ids = [];
       let courses = [];
 
       // If the user is staff, retrieve the assigned courses
       if (user[0].role_id === 3) {
+        const batchData = await query(
+          `SELECT sb.batch_id 
+           FROM staff_batches sb 
+           WHERE sb.user_id = ?`,
+          [user[0].user_id]
+        );
+        if (batchData.length > 0) {
+          batch_ids = batchData.map((batch) => batch.batch_id);
+        }
+
         const courseData = await query(
           `SELECT sc.course_id, c.course_name 
            FROM staff_courses sc 
@@ -56,7 +66,7 @@ const loginService = async (loginData) => {
       const payload = {
         user_id: user[0].user_id,
         role_id: user[0].role_id,
-        batch_id: user[0].batch_id,
+        batch_ids,
         semester_id: user[0].semester_id,
         stream_id: user[0].stream_id,
         courses, // Only for staff
