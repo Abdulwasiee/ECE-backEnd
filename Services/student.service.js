@@ -1,10 +1,12 @@
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const { query } = require("../Config/database.config");
-const jwt_secret_key = process.env.JWT_SECRET_KEY;
+require("dotenv").config();
+const jwt_secret_key = process.env.SECRET_KEY;
 
 // Add Student Service
 const addStudent = async (studentData) => {
+  
   const {
     first_name,
     last_name,
