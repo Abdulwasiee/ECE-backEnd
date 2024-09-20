@@ -176,7 +176,7 @@ const getAllUsers = async (reqUser, role_id, semester_id) => {
       u.email, 
       b.batch_year,
       b.batch_id,
-      COALESCE(sb_staff.batch_id, sb.batch_id) AS batch_id,
+      COALESCE(sb_staff.batch_id) AS staffBatch_id,
       sm.semester_name,
       COALESCE(sc.semester_id, 0) AS semester_id,
       u.stream_id,        
