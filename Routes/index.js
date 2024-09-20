@@ -13,7 +13,7 @@ router.use(userRouter);
 router.use(loginRouter);
 // router.use(contactRouter);
 router.use(newsRouter);
-// router.use(courseRouter);
+router.use(courseRouter);
 router.use(materialRouter);
 // router.use(studentRouter);
 module.exports = router;
