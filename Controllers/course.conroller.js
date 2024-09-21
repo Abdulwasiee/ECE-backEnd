@@ -2,11 +2,15 @@ const courseService = require("../Services/course.service");
 
 // Create a new course
 const createCourse = async (req, res) => {
-  const { course_name, course_code, semesterId, streamId } = req.body; // Added course_code
+  const { course_name, course_code, semesterId, streamId } = req.body;
   let batch_id;
+  let finalStreamId = streamId;
 
   if (req.user.role_id === 5) {
     batch_id = req.user.batch_ids[0];
+    if (req.user.stream_id) {
+      finalStreamId = req.user.stream_id;
+    }
   } else {
     batch_id = req.body.batch_id;
   }
@@ -16,13 +20,13 @@ const createCourse = async (req, res) => {
     course_code,
     batch_id,
     semesterId,
-    streamId
+    finalStreamId
   );
+
   return res.json({
     result,
   });
 };
-
 // Get all courses
 const getAllCourses = async (req, res) => {
   let batch_id;
@@ -32,7 +36,6 @@ const getAllCourses = async (req, res) => {
     batch_id = req.params.batch_id;
   }
   const { semesterId, streamId } = req.query;
-  s;
   const result = await courseService.getAllCourses(
     batch_id,
     semesterId,

@@ -66,7 +66,7 @@ const addStudent = async (studentData) => {
 
     // Generate JWT token
     const payload = {
-      student_id: result.insertId,
+      user_id: result.insertId,
       batch_ids,
       role_id,
       stream_id,

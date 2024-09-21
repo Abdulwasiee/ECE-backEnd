@@ -50,31 +50,33 @@ const createCourse = async (
   }
 };
 
-// Get all courses associated with a batch and semester, optionally with a stream
 const getAllCourses = async (batchId, semesterId, streamId = null) => {
   if (!batchId || !semesterId) {
     return { success: false, message: "Batch ID and semester ID are required" };
   }
 
   // Base SQL query
-  let sql = `
-    SELECT 
-      bc.batch_course_id, 
-      c.course_id, 
-      c.course_name, 
-      b.batch_id, 
-      b.batch_year 
-    FROM 
-      batch_courses bc
-    LEFT JOIN 
-      courses c ON bc.course_id = c.course_id
-    LEFT JOIN 
-      batches b ON bc.batch_id = b.batch_id
-    WHERE 
-      bc.batch_id = ? AND 
-      bc.semester_id = ?
-  `;
-
+ let sql = `
+  SELECT 
+    bc.batch_course_id, 
+    c.course_id, 
+    c.course_name, 
+    c.course_code,      
+    b.batch_id, 
+    b.batch_year,
+    s.stream_name  
+  FROM 
+    batch_courses bc
+  LEFT JOIN 
+    courses c ON bc.course_id = c.course_id
+  LEFT JOIN 
+    batches b ON bc.batch_id = b.batch_id
+  LEFT JOIN 
+    streams s ON bc.stream_id = s.stream_id 
+  WHERE 
+    bc.batch_id = ? AND 
+    bc.semester_id = ?
+`;
   // If streamId is provided, add it to the query
   const params = [batchId, semesterId];
   if (streamId) {
@@ -83,18 +85,18 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
   }
 
   try {
-    const rows = await query(sql, params);
+    const courses = await query(sql, params);
 
     // Check if any courses were found
-    if (rows.length === 0) {
+    if (courses.length === 0) {
       return {
         success: true,
-        courses: [],
-        message: "No courses found for the selected criteria",
+        courses,
+        message: "No courses found for the selected semester",
       };
     }
 
-    return { success: true, rows };
+    return { success: true, courses };
   } catch (error) {
     return {
       success: false,
@@ -102,11 +104,21 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
     };
   }
 };
-
 // Update a course by its ID
-const updateCourseById = async (courseId, courseName, courseCode, batchId, streamId = null, semesterId) => {
+const updateCourseById = async (
+  courseId,
+  courseName,
+  courseCode,
+  batchId,
+  streamId = null,
+  semesterId
+) => {
   if (!courseName || !courseCode || !batchId || !semesterId) {
-    return { success: false, message: "Course name, course code, batch ID, and semester ID are required" };
+    return {
+      success: false,
+      message:
+        "Course name, course code, batch ID, and semester ID are required",
+    };
   }
 
   const updateCourseSql = `UPDATE courses SET course_name = ?, course_code = ? WHERE course_id = ?`;
@@ -121,7 +133,12 @@ const updateCourseById = async (courseId, courseName, courseCode, batchId, strea
     await query(updateCourseSql, [courseName, courseCode, courseId]);
 
     // Update the batch_courses table with the new details
-    await query(updateBatchCourseSql, [batchId, courseId, streamId, semesterId]);
+    await query(updateBatchCourseSql, [
+      batchId,
+      courseId,
+      streamId,
+      semesterId,
+    ]);
 
     return { success: true, message: "Course updated successfully" };
   } catch (error) {
@@ -133,7 +150,13 @@ const updateCourseById = async (courseId, courseName, courseCode, batchId, strea
 };
 
 // Assign a course to a staff member
-const assignCourseToStaff = async (user_id, course_id, batch_id, stream_id = null, semester_id) => {
+const assignCourseToStaff = async (
+  user_id,
+  course_id,
+  batch_id,
+  stream_id = null,
+  semester_id
+) => {
   if (!semester_id) {
     return { success: false, message: "Semester ID is required" };
   }
@@ -145,7 +168,13 @@ const assignCourseToStaff = async (user_id, course_id, batch_id, stream_id = nul
   `;
 
   try {
-    const result = await query(assignCourseSql, [user_id, course_id, batch_id, stream_id, semester_id]);
+    const result = await query(assignCourseSql, [
+      user_id,
+      course_id,
+      batch_id,
+      stream_id,
+      semester_id,
+    ]);
     return {
       success: true,
       message: "Course assigned to staff successfully",
@@ -205,7 +234,6 @@ const removeStaffCourse = async (user_id, course_id) => {
     };
   }
 };
-
 
 module.exports = {
   createCourse,
