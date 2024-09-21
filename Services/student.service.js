@@ -14,7 +14,6 @@ const addStudent = async (studentData) => {
     batch_id,
     stream_id = null,
   } = studentData;
-
   const role_id = 2; // Role ID for "Student" role
 
   // Validation
@@ -79,7 +78,7 @@ const addStudent = async (studentData) => {
 
     return {
       success: true,
-      message: "Student added successfully.",
+      message: "Student Registerd successfully.",
       token,
     };
   } catch (error) {
