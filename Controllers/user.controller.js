@@ -13,14 +13,14 @@ const createUser = async (req, res) => {
 // Get all users
 const getAllUsers = async (req, res) => {
   const reqUser = req.user;
-  const { semesterId } = req.query;
+  const { semester_id } = req.query;
   let stream_id, batch_id, role_id;
+  
 
- 
   if (reqUser.role_id == 2 || reqUser.role_id == 5) {
     stream_id = reqUser.stream_id != null ? reqUser.stream_id : null;
     batch_id = reqUser.batch_id;
-    role_id = 3; 
+    role_id = 3;
   } else {
     role_id = req.params.role_id;
     stream_id = req.query.stream_id || null;
@@ -30,7 +30,7 @@ const getAllUsers = async (req, res) => {
   try {
     const result = await userService.getAllUsers(
       role_id,
-      semesterId,
+      semester_id,
       batch_id,
       stream_id
     );

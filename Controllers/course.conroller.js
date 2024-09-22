@@ -30,16 +30,19 @@ const createCourse = async (req, res) => {
 // Get all courses
 const getAllCourses = async (req, res) => {
   let batch_id;
+  console.log(req.user)
   if (req.user.role_id === 5 || req.user.role_id === 2) {
     batch_id = req.user.batch_ids[0];
   } else {
     batch_id = req.params.batch_id;
   }
-  const { semesterId, streamId } = req.query;
+  const { semester_id, stream_id } = req.query;
+  console.log(batch_id)
+  console.log(req.query)
   const result = await courseService.getAllCourses(
     batch_id,
-    semesterId,
-    streamId
+    semester_id,
+    stream_id
   );
   return res.json({
     result,

@@ -156,12 +156,7 @@ const createUser = async (userData, reqUser) => {
     return { success: false, message: error.message || "An error occurred." };
   }
 };
-const getAllUsers = async (
-  role_id,
-  semester_id,
-  batch_id,
-  stream_id
-) => {
+const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
   if (!role_id) {
     return {
       success: false,
@@ -199,37 +194,33 @@ const getAllUsers = async (
     WHERE u.role_id = ?
   `;
 
-  // Adding filter for staff based on semester, batch, and stream if provided
-  if (role_id === 3) {
+  // Adding filters based on role
+  const queryParams = [role_id];
+
+  // Adding filter conditions for staff (role_id 3) and representatives (role_id 5)
+  if (role_id === 3 || role_id === 5) {
     if (semester_id != null) {
-      sql += " AND COALESCE(sc.semester_id, 0) = ?";
+      sql += " AND u.semester_id = ?";
+      queryParams.push(semester_id);
     }
     if (batch_id != null) {
-      sql += " AND COALESCE(sb_staff.batch_id, 0) = ?";
+      sql += " AND u.batch_id = ?";
+      queryParams.push(batch_id);
     }
     if (stream_id != null) {
       sql += " AND u.stream_id = ?";
+      queryParams.push(stream_id);
     }
   }
 
   try {
-    // Execute the query with appropriate parameters
-    let queryParams = [role_id];
-
-    if (role_id === 3) {
-      if (semester_id != null) queryParams.push(semester_id);
-      if (batch_id != null) queryParams.push(batch_id);
-      if (stream_id != null) queryParams.push(stream_id);
-    }
-
+    // Execute the query with the constructed SQL and parameters
     let users = await query(sql, queryParams);
-
     return { success: true, users };
   } catch (error) {
     return { success: false, message: error.message };
   }
 };
-
 
 const updateUserById = async (userId, userData) => {
   const validation = await validateUserData(userData);

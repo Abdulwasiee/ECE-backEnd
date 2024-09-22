@@ -60,8 +60,7 @@ const loginService = async (loginData) => {
             course_name: course.course_name,
           }));
         }
-      }
-
+      } else batch_ids = [user[0].batch_id];
       // Generate JWT token with batch_id, stream_id, and semester_id
       const payload = {
         user_id: user[0].user_id,
