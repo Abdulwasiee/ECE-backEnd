@@ -156,8 +156,12 @@ const createUser = async (userData, reqUser) => {
     return { success: false, message: error.message || "An error occurred." };
   }
 };
-
-const getAllUsers = async (reqUser, role_id, semester_id) => {
+const getAllUsers = async (
+  role_id,
+  semester_id,
+  batch_id,
+  stream_id
+) => {
   if (!role_id) {
     return {
       success: false,
@@ -195,39 +199,37 @@ const getAllUsers = async (reqUser, role_id, semester_id) => {
     WHERE u.role_id = ?
   `;
 
-  // Adding filter for staff based on semester if provided
-  if (role_id === 3 && semester_id != null) {
-    sql += " AND COALESCE(sc.semester_id, 0) = ?";
+  // Adding filter for staff based on semester, batch, and stream if provided
+  if (role_id === 3) {
+    if (semester_id != null) {
+      sql += " AND COALESCE(sc.semester_id, 0) = ?";
+    }
+    if (batch_id != null) {
+      sql += " AND COALESCE(sb_staff.batch_id, 0) = ?";
+    }
+    if (stream_id != null) {
+      sql += " AND u.stream_id = ?";
+    }
   }
 
   try {
     // Execute the query with appropriate parameters
-    let users;
-    if (role_id === 3 && semester_id != null) {
-      // Staff user with semester filter
-      users = await query(sql, [role_id, semester_id]);
-    } else {
-      // Non-staff users or staff without semester filter
-      users = await query(sql, [role_id]);
+    let queryParams = [role_id];
+
+    if (role_id === 3) {
+      if (semester_id != null) queryParams.push(semester_id);
+      if (batch_id != null) queryParams.push(batch_id);
+      if (stream_id != null) queryParams.push(stream_id);
     }
 
-    // Filter by batch and stream if the requester is a representative or student
-    const batchIds = reqUser.batch_ids || []; // Ensure it's an array, defaulting to empty if not provided
-    const streamId = reqUser.stream_id; // Stream ID from the requester
-
-    if (reqUser.role_id === 5 || reqUser.role_id === 2) {
-      users = users.filter(
-        (user) =>
-          batchIds.includes(user.batch_id) &&
-          (streamId === null || user.stream_id === streamId)
-      );
-    }
+    let users = await query(sql, queryParams);
 
     return { success: true, users };
   } catch (error) {
     return { success: false, message: error.message };
   }
 };
+
 
 const updateUserById = async (userId, userData) => {
   const validation = await validateUserData(userData);

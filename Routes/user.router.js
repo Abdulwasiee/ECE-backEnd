@@ -11,7 +11,7 @@ router.post(
   userController.createUser
 );
 router.get(
-  "/api/getUsers/:role_id/:semesterId",
+  "/api/getUsers/:role_id",
   authMiddleware([1, 2, 4, 5]),
   userController.getAllUsers
 );

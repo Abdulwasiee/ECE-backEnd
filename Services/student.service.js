@@ -86,14 +86,13 @@ const addStudent = async (studentData) => {
   }
 };
 
-const getStudentsByBatch = async (batch_id) => {
-  // Validate batch_id
+const getStudentsByBatch = async (batch_id, stream_id) => {
   if (!batch_id) {
     return { success: false, message: "Batch ID is required." };
   }
 
   try {
-    const sql = `
+    let sql = `
       SELECT 
         s.student_id, 
         s.first_name, 
@@ -109,10 +108,21 @@ const getStudentsByBatch = async (batch_id) => {
       LEFT JOIN streams st ON s.stream_id = st.stream_id
       WHERE s.batch_id = ?`;
 
-    const students = await query(sql, [batch_id]);
+    const params = [batch_id];
+
+    // If stream_id is provided, add it to the query
+    if (stream_id) {
+      sql += ` AND s.stream_id = ?`;
+      params.push(stream_id);
+    }
+
+    const students = await query(sql, params);
 
     if (students.length === 0) {
-      return { success: false, message: "No students found for this batch." };
+      return {
+        success: false,
+        message: "No students found for this batch and stream.",
+      };
     }
 
     return { success: true, students };
@@ -120,6 +130,7 @@ const getStudentsByBatch = async (batch_id) => {
     return { success: false, message: error.message };
   }
 };
+
 
 const deleteStudent = async (student_id) => {
   // Validate student_id

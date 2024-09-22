@@ -6,14 +6,17 @@ const addStudent = async (req, res) => {
 };
 
 const getStudentsByBatch = async (req, res) => {
-  let batch_id;
-  if (req.user.role_id == 5) {
+  let batch_id, stream_id;
+
+  if (req.user.role_id === 5) {
     batch_id = req.user.batch_ids[0];
+    stream_id = req.user.stream_id !== null ? req.user.stream_id : null;
   } else {
     batch_id = req.params.batch_id;
+    stream_id = req.query.stream_id !== undefined ? req.query.stream_id : null;
   }
 
-  const result = await studentService.getStudentsByBatch(batch_id);
+  const result = await studentService.getStudentsByBatch(batch_id, stream_id);
   return res.json(result);
 };
 
