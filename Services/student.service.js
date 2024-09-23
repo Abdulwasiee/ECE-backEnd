@@ -6,14 +6,15 @@ const jwt_secret_key = process.env.SECRET_KEY;
 
 // Add Student Service
 const addStudent = async (studentData) => {
-  
   const {
     first_name,
     last_name,
     id_number,
     batch_id,
     stream_id = null,
+    semester,
   } = studentData;
+  console.log(studentData);
   const role_id = 2; // Role ID for "Student" role
 
   // Validation
@@ -24,6 +25,34 @@ const addStudent = async (studentData) => {
     };
   }
 
+  // Numeric batch and validation logic
+  const numericBatchId = parseInt(batch_id, 10);
+  const nextYear = numericBatchId + 1;
+
+  // Semester and stream validation for specific batches
+  if (numericBatchId == 3) {
+    if (!semester) {
+      return {
+        success: false,
+        message: `Semester is required for ${nextYear}rd year.`,
+      };
+    }
+    if (semester == 2 && !stream_id) {
+      return {
+        success: false,
+        message: `Stream is required for ${nextYear}rd year second semester.`,
+      };
+    }
+  }
+
+  if (numericBatchId == 4 && !stream_id) {
+    return {
+      success: false,
+      message: `Stream is required for ${nextYear}th year.`,
+    };
+  }
+
+  // Name and ID validation
   if (!validator.isAlpha(first_name) || !validator.isAlpha(last_name)) {
     return {
       success: false,
@@ -32,7 +61,10 @@ const addStudent = async (studentData) => {
   }
 
   if (!validator.isAlphanumeric(id_number)) {
-    return { success: false, message: "ID number must be alphanumeric." };
+    return {
+      success: false,
+      message: "ID number must be alphanumeric.",
+    };
   }
 
   // Check if the student already exists
@@ -130,7 +162,6 @@ const getStudentsByBatch = async (batch_id, stream_id) => {
     return { success: false, message: error.message };
   }
 };
-
 
 const deleteStudent = async (student_id) => {
   // Validate student_id

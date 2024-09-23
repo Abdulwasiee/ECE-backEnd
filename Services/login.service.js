@@ -12,7 +12,7 @@ const loginService = async (loginData) => {
   if (!email || !password) {
     return {
       success: false,
-      message: "Please provide both email and password.",
+      message: "Please provide both Email and Password.",
     };
   }
 
@@ -92,7 +92,7 @@ const studentLoginService = async (loginData) => {
   if (!id_number || !first_name) {
     return {
       success: false,
-      message: "Please provide both ID number and first name.",
+      message: "Please provide both ID number and First name.",
     };
   }
 
@@ -141,7 +141,7 @@ const studentLoginService = async (loginData) => {
         token,
       };
     } else {
-      return { success: false, message: "Invalid ID number or first name." };
+      return { success: false, message: "Invalid ID number or First name." };
     }
   } catch (error) {
     return { success: false, message: error.message };
