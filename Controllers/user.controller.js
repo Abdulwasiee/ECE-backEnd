@@ -4,6 +4,8 @@ const userService = require("../Services/users.service");
 const createUser = async (req, res) => {
   const userData = req.body;
   const reqUser = req.user;
+  console.log(reqUser)
+  console.log(userData)
   const result = await userService.createUser(userData, reqUser);
   return res.json({
     result,

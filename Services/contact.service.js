@@ -57,7 +57,7 @@ const getContactInfo = async (userId) => {
     if (contactRows.length === 0) {
       return {
         success: false,
-        data: contactRows,
+        contactRows,
         message: "No contact information found",
       };
     }

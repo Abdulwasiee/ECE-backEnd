@@ -104,7 +104,7 @@ const createUser = async (userData, reqUser) => {
       const userId = result.insertId;
 
       // Handle staff batch, stream, and course assignments
-      if (role_id === 3) {
+      if (role_id == 3) {
         await query(
           `
           INSERT INTO staff_batches (user_id, batch_id, stream_id, semester_id)

@@ -56,7 +56,7 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
   }
 
   // Base SQL query
- let sql = `
+  let sql = `
   SELECT 
     bc.batch_course_id, 
     c.course_id, 
@@ -190,14 +190,14 @@ const assignCourseToStaff = async (
 
 // Get all courses assigned to a staff member
 const getStaffCourses = async (user_id) => {
-  const getCoursesSql = `
-    SELECT sc.staff_course_id, sc.course_id, c.course_name, sc.batch_id, b.batch_year, sc.semester_id, sc.stream_id
-    FROM staff_courses sc
-    JOIN courses c ON sc.course_id = c.course_id
-    JOIN batches b ON sc.batch_id = b.batch_id
-    WHERE sc.user_id = ?;
-  `;
-
+ const getCoursesSql = `
+  SELECT sc.staff_course_id, sc.course_id, c.course_name, c.course_code, sc.batch_id, b.batch_year, sc.semester_id, sc.stream_id, s.stream_name
+  FROM staff_courses sc
+  JOIN courses c ON sc.course_id = c.course_id
+  JOIN batches b ON sc.batch_id = b.batch_id
+  JOIN streams s ON sc.stream_id = s.stream_id
+  WHERE sc.user_id = ?;
+`;
   try {
     const rows = await query(getCoursesSql, [user_id]);
 
