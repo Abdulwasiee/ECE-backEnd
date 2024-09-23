@@ -157,13 +157,6 @@ const createUser = async (userData, reqUser) => {
   }
 };
 const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
-  if (!role_id) {
-    return {
-      success: false,
-      message: "Role ID is required to retrieve all users.",
-    };
-  }
-
   // Base SQL query to retrieve users based on role
   let sql = `
     SELECT 

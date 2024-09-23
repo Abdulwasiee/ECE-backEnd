@@ -55,8 +55,7 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
     return { success: false, message: "Batch ID and semester ID are required" };
   }
 
-  // Base SQL query
-  let sql = `
+ let sql = `
   SELECT 
     bc.batch_course_id, 
     c.course_id, 
@@ -64,7 +63,9 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
     c.course_code,      
     b.batch_id, 
     b.batch_year,
-    s.stream_name  
+    s.stream_name,
+    sem.semester_id,
+    sem.semester_name
   FROM 
     batch_courses bc
   LEFT JOIN 
@@ -72,17 +73,20 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
   LEFT JOIN 
     batches b ON bc.batch_id = b.batch_id
   LEFT JOIN 
-    streams s ON bc.stream_id = s.stream_id 
+    streams s ON bc.stream_id = s.stream_id
+  LEFT JOIN
+    semesters sem ON bc.semester_id = sem.semester_id
   WHERE 
     bc.batch_id = ? AND 
     bc.semester_id = ?
 `;
-  // If streamId is provided, add it to the query
-  const params = [batchId, semesterId];
-  if (streamId) {
-    sql += " AND bc.stream_id = ?";
-    params.push(streamId);
-  }
+
+ // If streamId is provided, add it to the query
+ const params = [batchId, semesterId];
+ if (streamId) {
+   sql += " AND bc.stream_id = ?";
+   params.push(streamId);
+ }
 
   try {
     const courses = await query(sql, params);

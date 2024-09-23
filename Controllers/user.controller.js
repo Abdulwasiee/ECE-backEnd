@@ -21,7 +21,7 @@ const getAllUsers = async (req, res) => {
 
   if (reqUser.role_id == 2 || reqUser.role_id == 5) {
     stream_id = reqUser.stream_id != null ? reqUser.stream_id : null;
-    batch_id = reqUser.batch_id;
+    batch_id = reqUser.batch_ids[0];
     role_id = 3;
   } else {
     role_id = req.params.role_id;
