@@ -126,7 +126,9 @@ const studentLoginService = async (loginData) => {
         user_id,
         role_id,
         batch_ids,
-        stream_id, // Include stream_id in payload if needed
+        stream_id,
+        stream_name,
+        batch_year, // Include stream_id in payload if needed
       };
 
       const token = jwt.sign(payload, jwt_secret_key, {
