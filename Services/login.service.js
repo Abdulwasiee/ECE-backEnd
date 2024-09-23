@@ -29,7 +29,7 @@ const loginService = async (loginData) => {
       // Verify the password using bcrypt
       const isPasswordValid = await bcrypt.compare(password, user[0].password);
       if (!isPasswordValid) {
-        return { success: false, message: "Invalid email or password." };
+        return { success: false, message: "Invalid Email or Password." };
       }
       let batch_ids = [];
       let courses = [];
@@ -79,7 +79,7 @@ const loginService = async (loginData) => {
         token,
       };
     } else {
-      return { success: false, message: "User not found." };
+      return { success: false, message: "Invalid Email or Password." };
     }
   } catch (error) {
     return { success: false, message: error.message };
