@@ -14,7 +14,6 @@ const addStudent = async (studentData) => {
     stream_id = null,
     semester,
   } = studentData;
-  console.log(studentData);
   const role_id = 2; // Role ID for "Student" role
 
   // Validation
@@ -34,13 +33,13 @@ const addStudent = async (studentData) => {
     if (!semester) {
       return {
         success: false,
-        message: `Semester is required for ${nextYear}rd year.`,
+        message: `Semester is required for ${nextYear}th year.`,
       };
     }
     if (semester == 2 && !stream_id) {
       return {
         success: false,
-        message: `Stream is required for ${nextYear}rd year second semester.`,
+        message: `Stream is required for ${nextYear}th year second semester.`,
       };
     }
   }
