@@ -49,7 +49,6 @@ const deleteFileFromS3 = async (fileKey) => {
   try {
     const command = new DeleteObjectCommand(params);
     const deleteResult = await s3Client.send(command);
-    console.log("Delete Result:", deleteResult); // Log result for debugging
     return deleteResult;
   } catch (error) {
     console.error("Delete Error:", error); // More detailed logging
@@ -77,34 +76,18 @@ const updateFileInS3 = async (oldFileKey, newFile, newTitle) => {
 };
 
 // Save file URL and title in the database
-const saveMaterialToDB = async (
-  title,
-  fileUrl,
-  batchCourseId,
-  semesterId,
-  streamId,
-  uploadedBy
-) => {
-  if (
-    !validateParams([title, fileUrl, batchCourseId, semesterId, uploadedBy])
-  ) {
+const saveMaterialToDB = async (title, fileUrl, batchCourseId, uploadedBy) => {
+  if (!validateParams([title, fileUrl, batchCourseId, uploadedBy])) {
     throw new Error("Invalid material data for saving");
   }
 
   const sqlQuery = `
-    INSERT INTO materials (title, file_url, batch_course_id, semester_id, stream_id, uploaded_by)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO materials (title, file_url, batch_course_id, uploaded_by)
+    VALUES (?, ?, ?, ?)
   `;
 
   try {
-    await query(sqlQuery, [
-      title,
-      fileUrl,
-      batchCourseId,
-      semesterId,
-      streamId,
-      uploadedBy,
-    ]);
+    await query(sqlQuery, [title, fileUrl, batchCourseId, uploadedBy]);
     return { success: true };
   } catch (error) {
     console.error("Database Error:", error);

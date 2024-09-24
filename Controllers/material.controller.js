@@ -8,11 +8,10 @@ const {
 } = require("../Services/material.service");
 
 const uploadFile = async (req, res) => {
- 
   try {
-    const { title, batchCourseId, semesterId, streamId } = req.body;
+    const { title, batchCourseId } = req.body;
     const uploadedBy = req.user.user_id;
-    if (!title || !batchCourseId || !semesterId) {
+    if (!title) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -33,8 +32,6 @@ const uploadFile = async (req, res) => {
       title,
       fileUrl,
       batchCourseId,
-      semesterId,
-      streamId,
       uploadedBy
     );
 

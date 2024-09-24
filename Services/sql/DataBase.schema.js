@@ -162,15 +162,11 @@ CREATE TABLE IF NOT EXISTS materials (
   material_id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255),
   file_url VARCHAR(255),
-  batch_course_id INT,
-  semester_id INT,
-  stream_id INT DEFAULT NULL,
-  uploaded_by INT,
+  batch_course_id INT,  -- References batch, stream, semester, and course from batch_courses
+  uploaded_by INT,      -- Who uploaded the material (staff, representative, etc.)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (batch_course_id) REFERENCES batch_courses(batch_course_id),
-  FOREIGN KEY (semester_id) REFERENCES semesters(semester_id),
-  FOREIGN KEY (stream_id) REFERENCES streams(stream_id) ON DELETE SET NULL,
   FOREIGN KEY (uploaded_by) REFERENCES users(user_id)
 );
 `;
