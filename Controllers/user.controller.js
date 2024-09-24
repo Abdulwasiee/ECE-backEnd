@@ -28,6 +28,7 @@ const getAllUsers = async (req, res) => {
     stream_id = req.query.stream_id || null;
     batch_id = req.query.batch_id || null;
   }
+ 
 
   try {
     const result = await userService.getAllUsers(
