@@ -157,8 +157,8 @@ const createUser = async (userData, reqUser) => {
   }
 };
 const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
-  // Base SQL query to retrieve users based on role
   console.log(role_id, semester_id, batch_id, stream_id);
+  // Base SQL query to retrieve users based on role
   let sql = `
     SELECT 
       u.user_id, 

@@ -55,7 +55,7 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
     return { success: false, message: "Batch ID and semester ID are required" };
   }
 
- let sql = `
+  let sql = `
   SELECT 
     bc.batch_course_id, 
     c.course_id, 
@@ -81,12 +81,12 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
     bc.semester_id = ?
 `;
 
- // If streamId is provided, add it to the query
- const params = [batchId, semesterId];
- if (streamId) {
-   sql += " AND bc.stream_id = ?";
-   params.push(streamId);
- }
+  // If streamId is provided, add it to the query
+  const params = [batchId, semesterId];
+  if (streamId) {
+    sql += " AND bc.stream_id = ?";
+    params.push(streamId);
+  }
 
   try {
     const courses = await query(sql, params);
@@ -154,24 +154,35 @@ const updateCourseById = async (
 };
 
 // Assign a course to a staff member
-const assignCourseToStaff = async (
-  user_id,
-  course_id,
-  batch_id,
-  stream_id = null,
-  semester_id
-) => {
-  if (!semester_id) {
-    return { success: false, message: "Semester ID is required" };
-  }
-
-  const assignCourseSql = `
-    INSERT INTO staff_courses (user_id, course_id, batch_id, stream_id, semester_id)
-    VALUES (?, ?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE course_id = VALUES(course_id), batch_id = VALUES(batch_id), stream_id = VALUES(stream_id), semester_id = VALUES(semester_id);
+const assignCourseToStaff = async (user_id, batch_course_id) => {
+  // Step 1: Fetch the course details from the batch_courses table
+  const fetchCourseDetailsSql = `
+    SELECT course_id, batch_id, stream_id, semester_id
+    FROM batch_courses
+    WHERE batch_course_id = ?;
   `;
 
   try {
+    const courseDetails = await query(fetchCourseDetailsSql, [batch_course_id]);
+
+    // Check if course details were found
+    if (courseDetails.length === 0) {
+      return {
+        success: false,
+        message: "No course found with the provided batch_course_id.",
+      };
+    }
+
+    // Destructure the first (and only) result from the query
+    const { course_id, batch_id, stream_id, semester_id } = courseDetails[0];
+
+    // Step 2: Insert into staff_courses table
+    const assignCourseSql = `
+      INSERT INTO staff_courses (user_id, course_id, batch_id, stream_id, semester_id)
+      VALUES (?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE course_id = VALUES(course_id), batch_id = VALUES(batch_id), stream_id = VALUES(stream_id), semester_id = VALUES(semester_id);
+    `;
+
     const result = await query(assignCourseSql, [
       user_id,
       course_id,
@@ -179,10 +190,19 @@ const assignCourseToStaff = async (
       stream_id,
       semester_id,
     ]);
+
+    // Step 3: Insert into staff_batches table
+    const assignBatchSql = `
+      INSERT INTO staff_batches (user_id, batch_id, stream_id, semester_id)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE stream_id = VALUES(stream_id), semester_id = VALUES(semester_id);
+    `;
+
+    await query(assignBatchSql, [user_id, batch_id, stream_id, semester_id]);
+
     return {
       success: true,
-      message: "Course assigned to staff successfully",
-      staffCourseId: result.insertId,
+      message: "Course to staff successfully",
     };
   } catch (error) {
     return {
@@ -194,7 +214,7 @@ const assignCourseToStaff = async (
 
 // Get all courses assigned to a staff member
 const getStaffCourses = async (user_id) => {
- const getCoursesSql = `
+  const getCoursesSql = `
   SELECT sc.staff_course_id, sc.course_id, c.course_name, c.course_code, sc.batch_id, b.batch_year, sc.semester_id, sc.stream_id, s.stream_name
   FROM staff_courses sc
   JOIN courses c ON sc.course_id = c.course_id

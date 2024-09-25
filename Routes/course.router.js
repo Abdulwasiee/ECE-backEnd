@@ -19,7 +19,7 @@ router.get(
 );
 
 router.post(
-  "/api/assignCourse",
+  "/api/assignStaff",
   authMiddleware([1, 5]),
   courseController.assignCourseToStaff
 );
