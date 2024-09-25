@@ -14,9 +14,15 @@ const createCourse = async (
     };
   }
 
-  const createCourseSql = `INSERT INTO courses (course_name, course_code) 
+  const createCourseSql = `
+    INSERT INTO courses (course_name, course_code) 
     VALUES (?, ?) 
-    ON DUPLICATE KEY UPDATE course_name = VALUES(course_name), course_code = VALUES(course_code);`;
+    ON DUPLICATE KEY UPDATE 
+      course_name = VALUES(course_name), 
+      course_code = VALUES(course_code);
+  `;
+
+  const getCourseIdSql = `SELECT course_id FROM courses WHERE course_name = ? AND course_code = ?;`;
 
   const assignBatchCourseSql = `
     INSERT INTO batch_courses (batch_id, course_id, semester_id, stream_id)
@@ -29,9 +35,19 @@ const createCourse = async (
   `;
 
   try {
-    // Insert the course and get the new course ID (or retrieve the existing one)
-    const result = await query(createCourseSql, [courseName, courseCode]);
-    const courseId = result.insertId;
+    // Insert the course
+    await query(createCourseSql, [courseName, courseCode]);
+
+    // Retrieve the course ID after insertion
+    const result = await query(getCourseIdSql, [courseName, courseCode]);
+    const courseId = result[0]?.course_id; // Ensure courseId is valid
+
+    if (!courseId) {
+      return {
+        success: false,
+        message: "Course ID not found after creation.",
+      };
+    }
 
     // Assign the course to the batch, including optional stream_id
     await query(assignBatchCourseSql, [

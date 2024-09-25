@@ -157,7 +157,6 @@ const createUser = async (userData, reqUser) => {
   }
 };
 const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
-  // Base SQL query to retrieve users based on role
   let sql = `
     SELECT 
       u.user_id, 
@@ -187,22 +186,19 @@ const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
     WHERE u.role_id = ?
   `;
 
-  // Adding filters based on role
   const queryParams = [role_id];
 
-  // Adding filter conditions for staff (role_id 3) and representatives (role_id 5)
   if (role_id == 3 || role_id == 5) {
-    if (role_id == 3) {
-      if (semester_id != null) {
-        sql += " AND u.semester_id = ?";
-        queryParams.push(semester_id);
-      }
+    if (role_id == 3 && semester_id != null) {
+      sql += " AND u.semester_id = ?";
+      queryParams.push(semester_id);
     }
 
     if (batch_id != null) {
       sql += " AND u.batch_id = ?";
       queryParams.push(batch_id);
     }
+
     if (stream_id != null) {
       sql += " AND u.stream_id = ?";
       queryParams.push(stream_id);
@@ -210,14 +206,12 @@ const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
   }
 
   try {
-    // Execute the query with the constructed SQL and parameters
     let users = await query(sql, queryParams);
     return { success: true, users };
   } catch (error) {
     return { success: false, message: error.message };
   }
 };
-
 const updateUserById = async (userId, userData) => {
   const validation = await validateUserData(userData);
   if (!validation.success) {
@@ -343,7 +337,6 @@ const deleteUserById = async (userId) => {
   }
 };
 const getStaffDetails = async (semester_id, batch_id, stream_id = null) => {
-  console.log(semester_id, batch_id, stream_id);
   // Base query to fetch staff details
   let baseQuery = `
   SELECT 

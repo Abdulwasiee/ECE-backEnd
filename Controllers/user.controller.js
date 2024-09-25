@@ -48,14 +48,14 @@ const getAllUsers = async (req, res) => {
 const getStaff = async (req, res) => {
   const reqUser = req.user;
   const { semester_id } = req.query;
-  let stream_id, batch_id; 
+  let stream_id, batch_id;
 
   if (reqUser.role_id == 2 || reqUser.role_id == 5) {
     stream_id = reqUser.stream_id != null ? reqUser.stream_id : null;
     batch_id = reqUser.batch_ids[0];
   } else {
-    stream_id = req.query.stream_id ;
-    batch_id = req.query.batch_id || null;
+    stream_id = req.query.stream_id;
+    batch_id = req.query.batch_id;
   }
 
   try {
