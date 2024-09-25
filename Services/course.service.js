@@ -228,16 +228,37 @@ const assignCourseToStaff = async (user_id, batch_course_id) => {
   }
 };
 
-// Get all courses assigned to a staff member
 const getStaffCourses = async (user_id) => {
   const getCoursesSql = `
-  SELECT sc.staff_course_id, sc.course_id, c.course_name, c.course_code, sc.batch_id, b.batch_year, sc.semester_id, sc.stream_id, s.stream_name
-  FROM staff_courses sc
-  JOIN courses c ON sc.course_id = c.course_id
-  JOIN batches b ON sc.batch_id = b.batch_id
-  JOIN streams s ON sc.stream_id = s.stream_id
-  WHERE sc.user_id = ?;
-`;
+SELECT 
+  sc.staff_course_id, 
+  sc.course_id, 
+  c.course_name, 
+  c.course_code, 
+  bc.batch_course_id, 
+  sc.batch_id, 
+  b.batch_year, 
+  sc.semester_id, 
+  sc.stream_id, 
+  IFNULL(s.stream_name, 'N/A') AS stream_name
+FROM 
+  staff_courses sc
+JOIN 
+  courses c ON sc.course_id = c.course_id
+JOIN 
+  batches b ON sc.batch_id = b.batch_id
+LEFT JOIN 
+  batch_courses bc 
+    ON sc.batch_id = bc.batch_id 
+    AND sc.semester_id = bc.semester_id 
+    AND sc.course_id = bc.course_id
+    AND (sc.stream_id = bc.stream_id OR (sc.stream_id IS NULL AND bc.stream_id IS NULL))
+LEFT JOIN 
+  streams s ON sc.stream_id = s.stream_id
+WHERE 
+  sc.user_id = ?;
+  `;
+
   try {
     const rows = await query(getCoursesSql, [user_id]);
 
