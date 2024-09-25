@@ -15,7 +15,6 @@ const getAllUsers = async (req, res) => {
   const reqUser = req.user;
   const { semester_id } = req.query;
   let stream_id, batch_id, role_id;
-  
 
   if (reqUser.role_id == 2 || reqUser.role_id == 5) {
     stream_id = reqUser.stream_id != null ? reqUser.stream_id : null;
@@ -26,7 +25,6 @@ const getAllUsers = async (req, res) => {
     stream_id = req.query.stream_id || null;
     batch_id = req.query.batch_id || null;
   }
- 
 
   try {
     const result = await userService.getAllUsers(
@@ -44,6 +42,39 @@ const getAllUsers = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+const getStaff = async (req, res) => {
+  const reqUser = req.user;
+  const { semester_id } = req.query;
+  let stream_id, batch_id; 
+
+  if (reqUser.role_id == 2 || reqUser.role_id == 5) {
+    stream_id = reqUser.stream_id != null ? reqUser.stream_id : null;
+    batch_id = reqUser.batch_ids[0];
+  } else {
+    stream_id = req.query.stream_id ;
+    batch_id = req.query.batch_id || null;
+  }
+
+  try {
+    // Call the service function
+    const result = await userService.getStaffDetails(
+      semester_id,
+      batch_id,
+      stream_id
+    );
+
+    // Return the result to the client
+    return res.json({
+      result,
+    });
+  } catch (error) {
+    console.error("Error in getStaff controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
     });
   }
 };
@@ -68,4 +99,5 @@ module.exports = {
   updateUserById,
   deleteUserById,
   getAllUsers,
+  getStaff,
 };

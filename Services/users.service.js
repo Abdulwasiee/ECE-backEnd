@@ -157,7 +157,6 @@ const createUser = async (userData, reqUser) => {
   }
 };
 const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
-  console.log(role_id, semester_id, batch_id, stream_id);
   // Base SQL query to retrieve users based on role
   let sql = `
     SELECT 
@@ -343,10 +342,66 @@ const deleteUserById = async (userId) => {
     return { success: false, message: error.message };
   }
 };
+const getStaffDetails = async (semester_id, batch_id, stream_id = null) => {
+  console.log(semester_id, batch_id, stream_id);
+  // Base query to fetch staff details
+  let baseQuery = `
+  SELECT 
+    sb.user_id,
+    u.name,
+    c.course_name,
+    c.course_id,
+    s.stream_name,
+    b.batch_year,
+    b.batch_id,
+    sb.semester_id,
+    sem.semester_name  -- Add semester_name to the selected fields
+  FROM 
+    staff_batches sb
+  JOIN 
+    users u ON sb.user_id = u.user_id
+  JOIN 
+    staff_courses sc ON sb.user_id = sc.user_id
+  JOIN 
+    courses c ON sc.course_id = c.course_id
+  JOIN 
+    batches b ON sb.batch_id = b.batch_id
+  LEFT JOIN 
+    streams s ON sb.stream_id = s.stream_id
+  JOIN
+    semesters sem ON sb.semester_id = sem.semester_id  
+  WHERE 
+    sb.semester_id = ? 
+    AND sb.batch_id = ?
+`;
+  const params = [semester_id, batch_id];
 
+  // Add stream_id condition if it's provided
+  if (stream_id != null) {
+    baseQuery += " AND sb.stream_id = ?";
+    params.push(stream_id);
+  }
+
+  try {
+    const users = await query(baseQuery, params);
+
+    if (users.length === 0) {
+      return { success: false, message: "No staff found." };
+    }
+
+    return {
+      success: true,
+      users,
+    };
+  } catch (error) {
+    console.error("Error fetching staff details:", error);
+    return { success: false, message: "Error fetching staff details." };
+  }
+};
 module.exports = {
   createUser,
   getAllUsers,
   deleteUserById,
   updateUserById,
+  getStaffDetails,
 };
