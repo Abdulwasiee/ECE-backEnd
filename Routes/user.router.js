@@ -16,6 +16,11 @@ router.get(
   userController.getAllUsers
 );
 router.get(
+  "/api/assignedStaff",
+  authMiddleware([1, 2, 4, 5]),
+  userController.assignedStaff
+);
+router.get(
   "/api/getStaffs",
   authMiddleware([1, 2, 4, 5]),
   userController.getStaff

@@ -70,6 +70,13 @@ const createUser = async (userData, reqUser) => {
     // Check if user already exists by ID number or email
     const exists = await userExists(id_number, email);
     if (exists) {
+      if (role_id == 3) {
+        return {
+          success: false,
+          message:
+            "A staff member exists navigate to courses and try to assign a course.",
+        };
+      }
       return {
         success: false,
         message: "User with this ID number or email already exists.",
@@ -418,12 +425,47 @@ const getStaffDetails = async (semester_id, batch_id, stream_id = null) => {
     return { success: false, message: "Error fetching staff details." };
   }
 };
+const assignedStaff = async (courseId) => {
+  const sql = `
+       SELECT 
+    u.name,
+    s.semester_name,
+    st.stream_name,
+    b.batch_year
+FROM 
+    staff_courses sc
+LEFT JOIN 
+    users u ON sc.user_id = u.user_id
+LEFT JOIN 
+    semesters s ON sc.semester_id = s.semester_id
+LEFT JOIN 
+    streams st ON sc.stream_id = st.stream_id
+LEFT JOIN 
+    batches b ON sc.batch_id = b.batch_id
+WHERE 
+    sc.course_id = ?;
+    `;
 
+  try {
+    console.log(`Querying assigned staff for course ID: ${courseId}`);
+    const results = await query(sql, [courseId]);
 
+    console.log("Query results:", results); // Log the results for debugging
+
+    return {
+      success: true,
+      staff: results,
+    };
+  } catch (error) {
+    console.error(`Database error: ${error.message}`); // Log error details
+    throw new Error(`Database error: ${error.message}`);
+  }
+};
 module.exports = {
   createUser,
   getAllUsers,
   deleteUserById,
   updateUserById,
   getStaffDetails,
+  assignedStaff,
 };

@@ -57,7 +57,6 @@ const getStaff = async (req, res) => {
     stream_id = req.query.stream_id;
     batch_id = req.query.batch_id;
   }
-console.log(semester_id, batch_id, stream_id);
   try {
     // Call the service function
     const result = await userService.getStaffDetails(
@@ -94,10 +93,16 @@ const deleteUserById = async (req, res) => {
   return res.json({ result });
 };
 
+const assignedStaff = async (req, res) => {
+  const { courseId } = req.query;
+  const response = await userService.assignedStaff(courseId);
+  return res.json({ response });
+};
 module.exports = {
   createUser,
   updateUserById,
   deleteUserById,
   getAllUsers,
   getStaff,
+  assignedStaff,
 };
