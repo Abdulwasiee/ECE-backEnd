@@ -57,7 +57,7 @@ const getStaff = async (req, res) => {
     stream_id = req.query.stream_id;
     batch_id = req.query.batch_id;
   }
-
+console.log(semester_id, batch_id, stream_id);
   try {
     // Call the service function
     const result = await userService.getStaffDetails(

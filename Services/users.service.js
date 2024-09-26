@@ -342,7 +342,6 @@ const getStaffDetails = async (semester_id, batch_id, stream_id = null) => {
   SELECT 
     sb.user_id,
     u.name,
-    c.course_name,
     c.course_id,
     s.stream_name,
     b.batch_year,
@@ -364,10 +363,16 @@ const getStaffDetails = async (semester_id, batch_id, stream_id = null) => {
   JOIN
     semesters sem ON sb.semester_id = sem.semester_id  
   WHERE 
-    sb.semester_id = ? 
-    AND sb.batch_id = ?
-`;
-  const params = [semester_id, batch_id];
+    sb.batch_id = ?  -- Start with the batch_id condition
+  `;
+
+  const params = [batch_id]; // Start parameters with only batch_id
+
+  // Add semester_id condition if it's provided
+  if (semester_id != null) {
+    baseQuery += " AND sb.semester_id = ?";
+    params.push(semester_id);
+  }
 
   // Add stream_id condition if it's provided
   if (stream_id != null) {
@@ -378,19 +383,34 @@ const getStaffDetails = async (semester_id, batch_id, stream_id = null) => {
   try {
     const users = await query(baseQuery, params);
 
-    if (users.length === 0) {
+    // Create a Set to track unique combinations
+    const uniqueUsersSet = new Set();
+    const filteredUsers = [];
+
+    // Filter to retain unique users based on name, semester_id, and batch_id
+    users.forEach((user) => {
+      const uniqueKey = `${user.name}-${user.semester_id}-${user.batch_id}`;
+      if (!uniqueUsersSet.has(uniqueKey)) {
+        uniqueUsersSet.add(uniqueKey);
+        filteredUsers.push(user); // Only push if unique
+      }
+    });
+
+    if (filteredUsers.length === 0) {
       return { success: false, message: "No staff found." };
     }
 
     return {
       success: true,
-      users,
+      users: filteredUsers, // Return the filtered users
     };
   } catch (error) {
     console.error("Error fetching staff details:", error);
     return { success: false, message: "Error fetching staff details." };
   }
 };
+
+
 module.exports = {
   createUser,
   getAllUsers,
