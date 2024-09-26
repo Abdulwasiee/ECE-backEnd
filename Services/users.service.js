@@ -207,11 +207,20 @@ const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
 
   try {
     let users = await query(sql, queryParams);
-    return { success: true, users };
+
+    // Filter unique users based on name and batch ID
+    const uniqueUsers = Array.from(
+      new Map(
+        users.map((user) => [`${user.name}-${user.batch_id}`, user])
+      ).values()
+    );
+
+    return { success: true, users: uniqueUsers };
   } catch (error) {
     return { success: false, message: error.message };
   }
 };
+
 const updateUserById = async (userId, userData) => {
   const validation = await validateUserData(userData);
   if (!validation.success) {

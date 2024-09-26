@@ -116,7 +116,17 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
       };
     }
 
-    return { success: true, courses };
+    // Filter unique courses based on course name and code
+    const uniqueCourses = Array.from(
+      new Map(
+        courses.map((course) => [
+          `${course.course_name}-${course.course_code}`,
+          course,
+        ])
+      ).values()
+    );
+
+    return { success: true, courses: uniqueCourses };
   } catch (error) {
     return {
       success: false,
@@ -124,6 +134,7 @@ const getAllCourses = async (batchId, semesterId, streamId = null) => {
     };
   }
 };
+
 // Update a course by its ID
 const updateCourseById = async (
   courseId,
@@ -169,7 +180,6 @@ const updateCourseById = async (
   }
 };
 
-// Assign a course to a staff member
 const assignCourseToStaff = async (user_id, batch_course_id) => {
   // Step 1: Fetch the course details from the batch_courses table
   const fetchCourseDetailsSql = `
@@ -199,7 +209,7 @@ const assignCourseToStaff = async (user_id, batch_course_id) => {
       ON DUPLICATE KEY UPDATE course_id = VALUES(course_id), batch_id = VALUES(batch_id), stream_id = VALUES(stream_id), semester_id = VALUES(semester_id);
     `;
 
-    const result = await query(assignCourseSql, [
+    await query(assignCourseSql, [
       user_id,
       course_id,
       batch_id,
@@ -216,9 +226,23 @@ const assignCourseToStaff = async (user_id, batch_course_id) => {
 
     await query(assignBatchSql, [user_id, batch_id, stream_id, semester_id]);
 
+    // Step 4: Insert into batch_courses table if it doesn't already exist
+    const assignBatchCourseSql = `
+      INSERT INTO batch_courses (batch_id, stream_id, semester_id, course_id)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE course_id = VALUES(course_id);
+    `;
+
+    await query(assignBatchCourseSql, [
+      batch_id,
+      stream_id,
+      semester_id,
+      course_id,
+    ]);
+
     return {
       success: true,
-      message: "Course to staff successfully",
+      message: "Course assigned to staff successfully.",
     };
   } catch (error) {
     return {
@@ -227,36 +251,35 @@ const assignCourseToStaff = async (user_id, batch_course_id) => {
     };
   }
 };
-
 const getStaffCourses = async (user_id) => {
   const getCoursesSql = `
-SELECT 
-  sc.staff_course_id, 
-  sc.course_id, 
-  c.course_name, 
-  c.course_code, 
-  bc.batch_course_id, 
-  sc.batch_id, 
-  b.batch_year, 
-  sc.semester_id, 
-  sc.stream_id, 
-  IFNULL(s.stream_name, 'N/A') AS stream_name
-FROM 
-  staff_courses sc
-JOIN 
-  courses c ON sc.course_id = c.course_id
-JOIN 
-  batches b ON sc.batch_id = b.batch_id
-LEFT JOIN 
-  batch_courses bc 
-    ON sc.batch_id = bc.batch_id 
-    AND sc.semester_id = bc.semester_id 
-    AND sc.course_id = bc.course_id
-    AND (sc.stream_id = bc.stream_id OR (sc.stream_id IS NULL AND bc.stream_id IS NULL))
-LEFT JOIN 
-  streams s ON sc.stream_id = s.stream_id
-WHERE 
-  sc.user_id = ?;
+    SELECT 
+      sc.staff_course_id, 
+      sc.course_id, 
+      c.course_name, 
+      c.course_code, 
+      bc.batch_course_id, 
+      sc.batch_id, 
+      b.batch_year, 
+      sc.semester_id, 
+      sc.stream_id, 
+      IFNULL(s.stream_name, 'N/A') AS stream_name
+    FROM 
+      staff_courses sc
+    JOIN 
+      courses c ON sc.course_id = c.course_id
+    JOIN 
+      batches b ON sc.batch_id = b.batch_id
+    LEFT JOIN 
+      batch_courses bc 
+        ON sc.batch_id = bc.batch_id 
+        AND sc.semester_id = bc.semester_id 
+        AND sc.course_id = bc.course_id
+        AND (sc.stream_id = bc.stream_id OR (sc.stream_id IS NULL AND bc.stream_id IS NULL))
+    LEFT JOIN 
+      streams s ON sc.stream_id = s.stream_id
+    WHERE 
+      sc.user_id = ?;
   `;
 
   try {
@@ -269,7 +292,19 @@ WHERE
       };
     }
 
-    return { success: true, courses: rows };
+    
+    const uniqueCourses = rows.filter(
+      (course, index, self) =>
+        index ===
+        self.findIndex(
+          (c) =>
+            c.batch_id === course.batch_id &&
+            c.course_name === course.course_name &&
+            c.semester_id === course.semester_id
+        )
+    );
+
+    return { success: true, courses: uniqueCourses };
   } catch (error) {
     return {
       success: false,
