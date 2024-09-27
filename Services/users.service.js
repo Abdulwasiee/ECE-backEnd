@@ -429,6 +429,7 @@ const assignedStaff = async (courseId) => {
   const sql = `
        SELECT 
     u.name,
+    u.user_id,
     s.semester_name,
     st.stream_name,
     b.batch_year

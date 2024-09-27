@@ -167,9 +167,10 @@ CREATE TABLE IF NOT EXISTS materials (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (batch_course_id) REFERENCES batch_courses(batch_course_id),
-  FOREIGN KEY (uploaded_by) REFERENCES users(user_id)
+  FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE SET NULL
 );
 `;
+
 
 // Admins table (Admin users with full access)
 const createAdminsTable = `

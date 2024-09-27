@@ -73,9 +73,7 @@ const updateCourseById = async (req, res) => {
 
 // Controller to assign a course to a staff member
 const assignCourseToStaff = async (req, res) => {
-  const { user_id, batch_course_id } = req.body; // Added semester_id and stream_id
-  let batch_id;
-
+  const { user_id, batch_course_id } = req.body;
   if (!user_id || !batch_course_id) {
     return res.status(400).json({
       status: "error",
@@ -118,14 +116,7 @@ const getStaffCourses = async (req, res) => {
 
 // Controller to remove a course assignment for a staff member
 const removeStaffCourse = async (req, res) => {
-  const { user_id, course_id } = req.body;
-
-  if (!user_id || !course_id) {
-    return res.status(400).json({
-      status: "error",
-      message: "Missing required fields",
-    });
-  }
+  const { user_id, course_id } = req.query;
 
   try {
     const result = await courseService.removeStaffCourse(user_id, course_id);

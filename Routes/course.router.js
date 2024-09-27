@@ -29,7 +29,7 @@ router.get(
   courseController.getStaffCourses
 );
 router.delete(
-  "/removeStaffCourse",
+  "/api/removeStaffCourse",
   authMiddleware([1, 5]),
   courseController.removeStaffCourse
 );

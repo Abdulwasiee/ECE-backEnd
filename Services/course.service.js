@@ -292,7 +292,6 @@ const getStaffCourses = async (user_id) => {
       };
     }
 
-    
     const uniqueCourses = rows.filter(
       (course, index, self) =>
         index ===
@@ -313,24 +312,84 @@ const getStaffCourses = async (user_id) => {
   }
 };
 
-// Remove a course assignment from a staff member
 const removeStaffCourse = async (user_id, course_id) => {
-  const deleteQuery = `DELETE FROM staff_courses WHERE user_id = ? AND course_id = ?`;
+  const fetchDetailsSql = `
+    SELECT batch_id, stream_id, semester_id
+    FROM staff_courses
+    WHERE user_id = ? AND course_id = ?;
+  `;
+
+  const deleteStaffCoursesSql = `
+    DELETE FROM staff_courses WHERE user_id = ? AND course_id = ?;
+  `;
+
+  const deleteStaffBatchesSql = `
+    DELETE FROM staff_batches 
+    WHERE user_id = ? AND batch_id = ? AND stream_id = ? AND semester_id = ?;
+  `;
+
+  const checkAssignmentsSql = `
+    SELECT COUNT(*) as count
+    FROM staff_courses
+    WHERE course_id = ?;
+  `;
+
+  const deleteBatchCourseSql = `
+    DELETE FROM batch_courses 
+    WHERE batch_id = ? AND stream_id = ? AND semester_id = ? AND course_id = ?;
+  `;
 
   try {
-    await query(deleteQuery, [user_id, course_id]);
+    // Fetch batch, stream, and semester details
+    const courseDetails = await query(fetchDetailsSql, [user_id, course_id]);
+    if (!courseDetails || courseDetails.length === 0) {
+      return { success: false, message: "No course assignment found." };
+    }
+
+    // Destructure with optional chaining; if no data, assign null
+    const {
+      batch_id = null,
+      stream_id = null,
+      semester_id = null,
+    } = courseDetails[0] || {};
+    console.log(batch_id, stream_id, semester_id);
+
+    // Delete from staff_courses
+    await query(deleteStaffCoursesSql, [user_id, course_id]);
+
+    // Only delete from staff_batches if valid details exist
+    if (batch_id && stream_id && semester_id) {
+      await query(deleteStaffBatchesSql, [
+        user_id,
+        batch_id,
+        stream_id,
+        semester_id,
+      ]);
+    }
+
+    // Check if other staff are assigned to this course
+    const countResult = await query(checkAssignmentsSql, [course_id]);
+    if (countResult && countResult[0].count === 0) {
+      await query(deleteBatchCourseSql, [
+        batch_id,
+        stream_id,
+        semester_id,
+        course_id,
+      ]);
+    }
+
     return {
       success: true,
-      message: "Course assignment removed from staff successfully",
+      message: "Course assignment removed successfully.",
     };
   } catch (error) {
+    console.error("Error removing course assignment:", error); // Log the error
     return {
       success: false,
       message: "Error removing course assignment: " + error.message,
     };
   }
 };
-
 module.exports = {
   createCourse,
   getAllCourses,
