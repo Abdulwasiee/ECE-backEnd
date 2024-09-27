@@ -1,5 +1,7 @@
 const { query } = require("../Config/database.config");
 const bcrypt = require("bcrypt");
+const { sendEmail } = require("../Services/email.service"); 
+const crypto = require("crypto"); 
 
 // Helper function to validate required fields
 const validateUserData = async (userData) => {
@@ -15,17 +17,8 @@ const validateUserData = async (userData) => {
   return { success: true };
 };
 
-// Helper function to hash password
-const hashPassword = async (password) => {
-  const saltRounds = 10;
-  return bcrypt.hash(password, saltRounds);
-};
-
 // Helper function to check if user exists
 const userExists = async (id_number, email) => {
-  id_number = id_number !== undefined ? id_number : null;
-  email = email !== undefined ? email : null;
-
   const sql = `
     SELECT 1
     FROM users
@@ -35,26 +28,25 @@ const userExists = async (id_number, email) => {
     const result = await query(sql, [id_number, email]);
     return result.length > 0;
   } catch (error) {
-    return {
-      success: false,
-      message: `Error checking if user exists: ${error.message}`,
-    };
+    console.error("Error checking if user exists:", error);
+    return false;
   }
 };
 
-// Create a new user
+// Function to create a new user
 const createUser = async (userData, reqUser) => {
+  // Validate the provided user data
   const validation = await validateUserData(userData);
   if (!validation.success) {
     return validation;
   }
 
+  // Destructure the user data
   let {
     role_id,
     id_number,
     name,
     email,
-    password,
     batch_id,
     course_id,
     stream_id,
@@ -63,18 +55,18 @@ const createUser = async (userData, reqUser) => {
 
   // Representatives and department admins can only create staff members
   if (reqUser.role_id === 5 || reqUser.role_id === 4) {
-    role_id = 3; // Force staff role
+    role_id = 3; // Force staff role for representative and department admins
   }
 
   try {
-    // Check if user already exists by ID number or email
+    // Check if the user already exists by ID number or email
     const exists = await userExists(id_number, email);
     if (exists) {
       if (role_id == 3) {
         return {
           success: false,
           message:
-            "A staff member exists navigate to courses and try to assign a course.",
+            "A staff member with this information already exists. Navigate to courses and try to assign a course.",
         };
       }
       return {
@@ -83,13 +75,14 @@ const createUser = async (userData, reqUser) => {
       };
     }
 
-    // If representative is creating the user, assign their batch to the user
+    // If the representative is creating the user, assign their batch to the user
     if (reqUser.role_id === 5) {
       batch_id = reqUser.batch_ids[0]; // Assume representative has access to only one batch
     }
 
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Generate a random 8-digit password
+    const generatedPassword = crypto.randomBytes(4).toString("hex"); // Generate 8 hexadecimal characters
+    const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
     // Insert the new user into the users table
     const sql = `
@@ -110,7 +103,7 @@ const createUser = async (userData, reqUser) => {
     if (result.affectedRows > 0) {
       const userId = result.insertId;
 
-      // Handle staff batch, stream, and course assignments
+      // Handle staff batch, stream, and course assignments if the role is staff
       if (role_id == 3) {
         await query(
           `
@@ -151,18 +144,29 @@ const createUser = async (userData, reqUser) => {
         }
       }
 
+      // Send an email to the user with their account details
+      try {
+        await sendEmail(name, email, generatedPassword, role_id); // Send the generated password
+      } catch (emailError) {
+        console.error("Error sending email:", emailError);
+      }
+
       return {
         success: true,
-        message: "User created successfully.",
+        message: "User created successfully and email sent.",
         userId: userId,
       };
     } else {
       return { success: false, message: "User creation failed." };
     }
   } catch (error) {
+    console.error("Error creating user:", error);
     return { success: false, message: error.message || "An error occurred." };
   }
 };
+
+module.exports = { createUser };
+
 const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
   let sql = `
     SELECT 
