@@ -163,14 +163,10 @@ const getStudentsByBatch = async (batch_id, stream_id) => {
 };
 
 const deleteStudent = async (student_id) => {
-  // Validate student_id
-  if (!student_id) {
-    return { success: false, message: "Student ID is required." };
-  }
-
+ 
   try {
     const sql = "DELETE FROM students WHERE student_id = ?";
-    const [result] = await query(sql, [student_id]);
+    const result = await query(sql, [student_id]);
     if (result.affectedRows > 0) {
       return { success: true, message: "Student deleted successfully." };
     } else {

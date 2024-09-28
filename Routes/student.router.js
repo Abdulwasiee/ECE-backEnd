@@ -12,7 +12,7 @@ router.get(
 
 router.delete(
   "/api/student/:student_id",
-  authMiddleware([1,2,5]),
+  authMiddleware([1, 2, 5]),
   studentController.deleteStudent
 );
 
