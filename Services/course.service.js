@@ -67,6 +67,7 @@ const createCourse = async (
 };
 
 const getAllCourses = async (batchId, semesterId, streamId = null) => {
+  console.log(batchId, semesterId, streamId);
   if (!batchId || !semesterId) {
     return { success: false, message: "Batch ID and semester ID are required" };
   }

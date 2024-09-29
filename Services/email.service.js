@@ -32,12 +32,14 @@ const sendEmail = async (userFirstName, userEmail, userPassword, role_id) => {
 
 Welcome to the Electrical and Computer Engineering (ECE) department at Hawassa University!
 
-Your account has been created. ${roleDescription} You can now access the department's portal using the following credentials:
+Your account has been created. ${roleDescription} You can now access the department's Website using the following credentials:
 
 Email: ${userEmail}
 Password: ${userPassword}
+You can change your password after login and navigate to the profile page.
 
 Please log in to the system at the following website: http://electrical.et.hu.com.
+
 
 Regards,
 ECE Department,
