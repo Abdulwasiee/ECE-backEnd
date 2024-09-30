@@ -227,20 +227,6 @@ const assignCourseToStaff = async (user_id, batch_course_id) => {
 
     await query(assignBatchSql, [user_id, batch_id, stream_id, semester_id]);
 
-    // Step 4: Insert into batch_courses table if it doesn't already exist
-    const assignBatchCourseSql = `
-      INSERT INTO batch_courses (batch_id, stream_id, semester_id, course_id)
-      VALUES (?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE course_id = VALUES(course_id);
-    `;
-
-    await query(assignBatchCourseSql, [
-      batch_id,
-      stream_id,
-      semester_id,
-      course_id,
-    ]);
-
     return {
       success: true,
       message: "Course assigned to staff successfully.",
@@ -324,11 +310,6 @@ const removeStaffCourse = async (user_id, course_id) => {
     DELETE FROM staff_courses WHERE user_id = ? AND course_id = ?;
   `;
 
-  const deleteStaffBatchesSql = `
-    DELETE FROM staff_batches 
-    WHERE user_id = ? AND batch_id = ? AND stream_id = ? AND semester_id = ?;
-  `;
-
   const checkAssignmentsSql = `
     SELECT COUNT(*) as count
     FROM staff_courses
@@ -340,6 +321,11 @@ const removeStaffCourse = async (user_id, course_id) => {
     WHERE batch_id = ? AND stream_id = ? AND semester_id = ? AND course_id = ?;
   `;
 
+  const deleteStaffBatchSql = `
+    DELETE FROM staff_batches
+    WHERE user_id = ? AND batch_id = ? AND semester_id = ?;
+  `;
+
   try {
     // Fetch batch, stream, and semester details
     const courseDetails = await query(fetchDetailsSql, [user_id, course_id]);
@@ -347,29 +333,20 @@ const removeStaffCourse = async (user_id, course_id) => {
       return { success: false, message: "No course assignment found." };
     }
 
-    // Destructure with optional chaining; if no data, assign null
+    // Destructure with default values
     const {
       batch_id = null,
       stream_id = null,
       semester_id = null,
-    } = courseDetails[0] || {};
-    console.log(batch_id, stream_id, semester_id);
+    } = courseDetails[0];
 
     // Delete from staff_courses
     await query(deleteStaffCoursesSql, [user_id, course_id]);
 
-    // Only delete from staff_batches if valid details exist
-    if (batch_id && stream_id && semester_id) {
-      await query(deleteStaffBatchesSql, [
-        user_id,
-        batch_id,
-        stream_id,
-        semester_id,
-      ]);
-    }
-
     // Check if other staff are assigned to this course
     const countResult = await query(checkAssignmentsSql, [course_id]);
+
+    // If no other staff is assigned, delete from batch_courses
     if (countResult && countResult[0].count === 0) {
       await query(deleteBatchCourseSql, [
         batch_id,
@@ -379,12 +356,15 @@ const removeStaffCourse = async (user_id, course_id) => {
       ]);
     }
 
+    // Delete from staff_batches for the current user
+    await query(deleteStaffBatchSql, [user_id, batch_id, semester_id]);
+
     return {
       success: true,
-      message: "Course assignment removed successfully.",
+      message: "Course assignment and related data removed successfully.",
     };
   } catch (error) {
-    console.error("Error removing course assignment:", error); // Log the error
+    console.error("Error removing course assignment:", error);
     return {
       success: false,
       message: "Error removing course assignment: " + error.message,

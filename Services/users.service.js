@@ -165,8 +165,6 @@ const createUser = async (userData, reqUser) => {
   }
 };
 
-module.exports = { createUser };
-
 const getAllUsers = async (role_id, semester_id, batch_id, stream_id) => {
   let sql = `
     SELECT 
@@ -367,7 +365,7 @@ const getStaffDetails = async (semester_id, batch_id, stream_id = null) => {
     b.batch_year,
     b.batch_id,
     sb.semester_id,
-    sem.semester_name  -- Add semester_name to the selected fields
+    sem.semester_name  
   FROM 
     staff_batches sb
   JOIN 

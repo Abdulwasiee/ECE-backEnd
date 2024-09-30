@@ -119,8 +119,7 @@ const deleteMaterialFromDB = async (materialId) => {
 
 // Fetch materials based only on batch course ID
 const getMaterialsByBatchCourseId = async (batchCourseId) => {
-  console.log(batchCourseId)
-  // Base SQL query
+  // Base SQL query with COALESCE to handle null or missing user names
   const sqlQuery = `
     SELECT 
       m.material_id, 
@@ -129,9 +128,9 @@ const getMaterialsByBatchCourseId = async (batchCourseId) => {
       m.batch_course_id, 
       m.created_at, 
       m.updated_at, 
-      u.name AS uploaded_by
+      COALESCE(u.name, 'Deleted User') AS uploaded_by
     FROM materials m
-    JOIN users u ON m.uploaded_by = u.user_id
+    LEFT JOIN users u ON m.uploaded_by = u.user_id
     WHERE m.batch_course_id = ?
   `;
 
