@@ -6,13 +6,13 @@ const { authMiddleware } = require("../Middlewire/Auth");
 router.post("/api/student/register", studentController.addStudent);
 router.get(
   "/api/students/:batch_id",
-  authMiddleware([1, 5]),
+  authMiddleware([1, 4, 5]),
   studentController.getStudentsByBatch
 );
 
 router.delete(
   "/api/student/:student_id",
-  authMiddleware([1, 2, 5]),
+  authMiddleware([1, 2, 4, 5]),
   studentController.deleteStudent
 );
 

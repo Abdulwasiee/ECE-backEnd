@@ -1,15 +1,16 @@
 const { query } = require("../Config/database.config");
 
 const addContactInformation = async (userId, contactInfo) => {
-  const { office_room, phone_number, availability, email } = contactInfo;
+  const { office_room, phone_number, availability } = contactInfo;
 
   // Validate the input fields
-  if (!office_room || !phone_number || !availability || !email) {
+  if (!office_room || !phone_number || !availability) {
     return {
       status: "error",
       message: "Missing required fields",
     };
   }
+  let email = null;
 
   try {
     // Step 2: Insert or update the contact information
