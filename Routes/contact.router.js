@@ -4,7 +4,7 @@ const { authMiddleware } = require("../Middlewire/Auth");
 const contactController = require("../Controllers/contact.controller");
 router.post(
   "/api/addContact",
-  authMiddleware([1, 3, 4]),
+  authMiddleware([1, 3, 4,5]),
   contactController.addContact
 );
 router.get(
@@ -14,12 +14,12 @@ router.get(
 );
 router.put(
   "/api/updateContact/:userId",
-  authMiddleware([1, 3, 4]),
+  authMiddleware([1, 3, 4,5]),
   contactController.updateContactInfo
 );
 router.delete(
   "/api/deleteContact/:userId",
-  authMiddleware([1, 3, 4]),
+  authMiddleware([1, 3, 4,5]),
   contactController.deleteContactInfo
 );
 module.exports = router;

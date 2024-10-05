@@ -1,4 +1,5 @@
 const contactService = require("../Services/contact.service");
+const { decrypt } = require("../Services/decyptor.service");
 
 // Controller function to handle adding contact information
 const addContact = async (req, res) => {
@@ -24,9 +25,8 @@ const getContactInformation = async (req, res) => {
   if (req.user.role_id == 3) {
     userId = req.user.user_id;
   } else {
-    userId = req.params.userId;
+    userId = decrypt(req.params.userId);
   }
-
   try {
     const result = await contactService.getContactInfo(userId);
     return res.json({

@@ -4,7 +4,7 @@ const addContactInformation = async (userId, contactInfo) => {
   const { office_room, phone_number, availability } = contactInfo;
 
   // Validate the input fields
-  if (!office_room || !phone_number || !availability) {
+  if (!phone_number) {
     return {
       status: "error",
       message: "Missing required fields",
