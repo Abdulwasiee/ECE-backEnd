@@ -1,3 +1,4 @@
+const { decrypt } = require("../Services/decyptor.service");
 const {
   uploadFileToS3,
   deleteFileFromS3,
@@ -9,6 +10,8 @@ const {
 const uploadFile = async (req, res) => {
   try {
     const { title, batchCourseId } = req.body;
+    const materialBatchCourseId = decrypt(batchCourseId);
+
     const uploadedBy = req.user.user_id;
     if (!title) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -27,12 +30,7 @@ const uploadFile = async (req, res) => {
     const fileUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${title}`;
 
     // Save file details to the database
-    await saveMaterialToDB(
-      title,
-      fileUrl,
-      batchCourseId,
-      uploadedBy
-    );
+    await saveMaterialToDB(title, fileUrl, materialBatchCourseId, uploadedBy);
 
     return res.status(200).json({ message: "File uploaded successfully" });
   } catch (error) {
@@ -66,14 +64,10 @@ const deleteFile = async (req, res) => {
 // Controller to fetch materials by batchCourseId
 const getMaterials = async (req, res) => {
   try {
-    const { courseId } = req.params;
+    let { courseId } = req.params;
 
-    if (!courseId) {
-      return res.status(400).json({ message: "Batch course ID is required" });
-    }
-
-    // Fetch materials from the database based on batchCourseId
-    const materials = await getMaterialsByBatchCourseId(courseId);
+    const decryptedId = decrypt(courseId);
+    const materials = await getMaterialsByBatchCourseId(decryptedId);
 
     if (materials.length === 0) {
       return res.status(404).json({ message: "No materials found" });
