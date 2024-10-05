@@ -10,20 +10,20 @@ const {
 const { authMiddleware } = require("../Middlewire/Auth");
 
 // Configure multer
-const storage = multer.memoryStorage(); 
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Define routes with multer middleware
 router.post(
   "/api/uploadFile",
-  authMiddleware([1, 3, 4,5]),
+  authMiddleware([1, 3, 4, 5]),
   upload.single("file"),
   uploadFile
 );
-router.delete("/api/deleteFile", authMiddleware([1, 3,4, 5]), deleteFile);
+router.delete("/api/deleteFile", authMiddleware([1, 3, 4, 5]), deleteFile);
 router.get(
   "/api/materials/:courseId",
-  authMiddleware([1, 2, 3,4, 5]),
+  authMiddleware([1, 2, 3, 4, 5]),
   getMaterials
 );
 

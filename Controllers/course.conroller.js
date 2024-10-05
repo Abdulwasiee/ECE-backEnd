@@ -117,6 +117,7 @@ const getStaffCourses = async (req, res) => {
 // Controller to remove a course assignment for a staff member
 const removeStaffCourse = async (req, res) => {
   const { user_id, course_id } = req.query;
+  console.log(user_id, course_id);
 
   try {
     const result = await courseService.removeStaffCourse(user_id, course_id);

@@ -4,12 +4,12 @@ const courseController = require("../Controllers/course.conroller");
 const { authMiddleware } = require("../Middlewire/Auth");
 router.post(
   "/api/addCourse",
-  authMiddleware([1, 5]),
+  authMiddleware([1,4]),
   courseController.createCourse
 );
 router.put(
   "/api/updateCourse/:courseId",
-  authMiddleware([1, 5]),
+  authMiddleware([1, 4]),
   courseController.updateCourseById
 );
 router.get(
@@ -20,7 +20,7 @@ router.get(
 
 router.post(
   "/api/assignStaff",
-  authMiddleware([1, 5]),
+  authMiddleware([1, 4]),
   courseController.assignCourseToStaff
 );
 router.get(
@@ -30,7 +30,7 @@ router.get(
 );
 router.delete(
   "/api/removeStaffCourse",
-  authMiddleware([1, 5]),
+  authMiddleware([1, 4]),
   courseController.removeStaffCourse
 );
 

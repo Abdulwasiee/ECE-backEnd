@@ -1,7 +1,6 @@
 const {
   uploadFileToS3,
   deleteFileFromS3,
-  updateFileInS3,
   saveMaterialToDB,
   deleteMaterialFromDB,
   getMaterialsByBatchCourseId,

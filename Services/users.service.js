@@ -53,11 +53,6 @@ const createUser = async (userData, reqUser) => {
     semester_id,
   } = userData;
 
-  // Representatives and department admins can only create staff members
-  if (reqUser.role_id === 5 || reqUser.role_id === 4) {
-    role_id = 3; // Force staff role for representative and department admins
-  }
-
   try {
     // Check if the user already exists by ID number or email
     const exists = await userExists(id_number, email);

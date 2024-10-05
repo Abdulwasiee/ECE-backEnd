@@ -77,7 +77,6 @@ const updateFileInS3 = async (oldFileKey, newFile, newTitle) => {
 
 // Save file URL and title in the database
 const saveMaterialToDB = async (title, fileUrl, batchCourseId, uploadedBy) => {
-  console.log(title, fileUrl, batchCourseId, uploadedBy);
   if (!validateParams([title, fileUrl, batchCourseId, uploadedBy])) {
     throw new Error("Invalid material data for saving");
   }

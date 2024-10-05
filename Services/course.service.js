@@ -300,6 +300,7 @@ const getStaffCourses = async (user_id) => {
 };
 
 const removeStaffCourse = async (user_id, course_id) => {
+  console.log(user_id, course_id);
   const fetchDetailsSql = `
     SELECT batch_id, stream_id, semester_id
     FROM staff_courses
