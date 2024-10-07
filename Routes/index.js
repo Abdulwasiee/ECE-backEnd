@@ -1,5 +1,7 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router(); // main router
+
+// Import all routes
 const installRouter = require("./install.router");
 const userRouter = require("./user.router");
 const loginRouter = require("./login.router");
@@ -19,5 +21,7 @@ router.use(courseRouter);
 router.use(materialRouter);
 router.use(studentRouter);
 router.use(checkUserRouter);
-router.use(passwordRouter); 
+router.use(passwordRouter);
+
+// export router
 module.exports = router;

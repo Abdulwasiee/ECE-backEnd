@@ -32,7 +32,7 @@ app.use(express.json());
 app.use(router);
 
 // Define the port from environment variables
-const port = process.env.PORT || 3000; // Default to port 3000 if not specified
+const port = process.env.PORT;
 
 // Start the server
 app.listen(port, () => {

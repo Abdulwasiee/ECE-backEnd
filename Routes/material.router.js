@@ -20,7 +20,11 @@ router.post(
   upload.single("file"),
   uploadFile
 );
+
+// router to delet the uploaded file 
 router.delete("/api/deleteFile", authMiddleware([1, 3, 4, 5]), deleteFile);
+
+// router to get all materials for a course
 router.get(
   "/api/materials/:courseId",
   authMiddleware([1, 2, 3, 4, 5]),

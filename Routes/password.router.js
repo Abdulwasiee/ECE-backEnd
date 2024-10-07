@@ -4,9 +4,10 @@ const { authMiddleware } = require("../Middlewire/Auth");
 
 const router = express.Router();
 
+// router to change password
 router.post(
   "/api/changePassword",
-  authMiddleware([1, 3, 4, 5]),
+  authMiddleware([3, 4, 5]),
   password.changePassword
 );
 
