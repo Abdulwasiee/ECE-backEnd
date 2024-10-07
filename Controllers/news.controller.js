@@ -4,8 +4,9 @@ const {
   updateNews,
   deleteNews,
   getNewsByUserId,
+  getNewsById,
 } = require("../Services/news.service");
-
+const { decrypt } = require("../Services/decyptor.service");
 const postNews = async (req, res) => {
   const newsData = req.body;
   const posted_by = req.user.user_id;
@@ -37,6 +38,22 @@ const fetchNews = async (req, res) => {
     });
   }
 };
+const fetchNewsById = async (req, res) => {
+  const { newsId } = req.params;
+  const decryptedId = decrypt(newsId);
+  try {
+    const result = await getNewsById(decryptedId);
+    return res.json({
+      result,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 // Fetch news by user ID
 const fetchNewsByUserId = async (req, res) => {
   const { user_id } = req.user;
@@ -57,9 +74,11 @@ const fetchNewsByUserId = async (req, res) => {
 // Update News
 const updateNewsById = async (req, res) => {
   const { newsId } = req.params;
+  const decryptedId = decrypt(newsId);
   const updatedNewsData = req.body;
+
   try {
-    const result = await updateNews(newsId, updatedNewsData);
+    const result = await updateNews(decryptedId, updatedNewsData);
     return res.json({
       result,
     });
@@ -75,6 +94,7 @@ const updateNewsById = async (req, res) => {
 // Delete News
 const deleteNewsById = async (req, res) => {
   const { newsId } = req.params;
+  console.log(newsId);
   try {
     const result = await deleteNews(newsId);
 
@@ -93,6 +113,7 @@ const deleteNewsById = async (req, res) => {
 module.exports = {
   postNews,
   fetchNews,
+  fetchNewsById,
   fetchNewsByUserId,
   updateNewsById,
   deleteNewsById,

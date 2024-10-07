@@ -65,6 +65,30 @@ const getNewsByUserId = async (userId) => {
     throw new Error("Error fetching news by user ID: " + err.message);
   }
 };
+
+const getNewsById = async (newsId) => {
+  const getNewsByIdQuery = `
+    SELECT n.news_id, n.title, n.content, n.created_at, n.posted_by
+    FROM news n
+    WHERE n.news_id = ?;
+  `;
+
+  try {
+    const result = await query(getNewsByIdQuery, [newsId]);
+    if (result.length === 0) {
+      return {
+        success: false,
+        message: "No news found with the provided ID.",
+      };
+    }
+    return {
+      success: true,
+      result,
+    };
+  } catch (err) {
+    throw new Error("Error fetching news by ID: " + err.message);
+  }
+};
 // Update news by ID
 const updateNews = async (newsId, updatedNewsData) => {
   const { title, content } = updatedNewsData;
@@ -118,4 +142,5 @@ module.exports = {
   getNewsByUserId,
   updateNews,
   deleteNews,
+  getNewsById,
 };

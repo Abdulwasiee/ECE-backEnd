@@ -18,6 +18,11 @@ router.get(
   authMiddleware([1, 4]),
   newsController.fetchNewsByUserId
 );
+router.get(
+  "/api/getNewsById/:newsId",
+  authMiddleware([1, 4]),
+  newsController.fetchNewsById
+);
 // Route to update news by ID
 router.put(
   "/api/updateNews/:newsId",

@@ -5,7 +5,7 @@ const { authMiddleware } = require("../Middlewire/Auth");
 
 router.post(
   "/api/addCourse",
-  authMiddleware([1,4]),
+  authMiddleware([1, 4]),
   courseController.createCourse
 );
 router.put(
@@ -18,6 +18,11 @@ router.get(
   "/api/getCourses/:batch_id",
   authMiddleware([1, 2, 3, 4, 5]),
   courseController.getAllCourses
+);
+router.get(
+  "/api/getCourseById/:courseId",
+  authMiddleware([1, 4]),
+  courseController.getCourseById
 );
 
 router.post(

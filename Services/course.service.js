@@ -181,6 +181,52 @@ const updateCourseById = async (
   }
 };
 
+const getCourseById = async (courseId) => {
+  let sql = `
+  SELECT 
+    c.course_id, 
+    c.course_name, 
+    c.course_code, 
+    b.batch_id, 
+    b.batch_year,
+    s.stream_name,
+    sem.semester_id,
+    sem.semester_name
+  FROM 
+    courses c
+  LEFT JOIN 
+    batch_courses bc ON c.course_id = bc.course_id
+  LEFT JOIN 
+    batches b ON bc.batch_id = b.batch_id
+  LEFT JOIN 
+    streams s ON bc.stream_id = s.stream_id
+  LEFT JOIN 
+    semesters sem ON bc.semester_id = sem.semester_id
+  WHERE 
+    c.course_id = ?
+`;
+
+  try {
+    const course = await query(sql, [courseId]);
+
+    // Check if a course was found
+    if (course.length === 0) {
+      return {
+        success: true,
+        course: null,
+        message: "Course not found",
+      };
+    }
+
+    return { success: true, course: course[0] };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Error retrieving course: " + error.message,
+    };
+  }
+};
+
 const assignCourseToStaff = async (user_id, batch_course_id) => {
   // Step 1: Fetch the course details from the batch_courses table
   const fetchCourseDetailsSql = `
@@ -375,6 +421,7 @@ const removeStaffCourse = async (user_id, course_id) => {
 module.exports = {
   createCourse,
   getAllCourses,
+  getCourseById,
   updateCourseById,
   assignCourseToStaff,
   getStaffCourses,

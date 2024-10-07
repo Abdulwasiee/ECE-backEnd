@@ -1,4 +1,5 @@
 const courseService = require("../Services/course.service");
+const { decrypt } = require("../Services/decyptor.service");
 
 // Create a new course
 const createCourse = async (req, res) => {
@@ -45,21 +46,24 @@ const getAllCourses = async (req, res) => {
     result,
   });
 };
+// Get all courses
+const getCourseById = async (req, res) => {
+  const { courseId } = req.params;
+  const decryptedCourseId = decrypt(courseId);
+  const result = await courseService.getCourseById(decryptedCourseId);
+  return res.json({
+    result,
+  });
+};
 
 // Update a course by ID
 const updateCourseById = async (req, res) => {
   const { courseId } = req.params;
-  const { course_name, course_code, streamId, semesterId } = req.body; // Added course_code
-  let batch_id;
-
-  if (req.user.role_id === 5) {
-    batch_id = req.user.batch_id;
-  } else {
-    batch_id = req.query.batch_id;
-  }
+  const decryptedCourseId = decrypt(courseId);
+  const { course_name, course_code, streamId, semesterId, batch_id } = req.body;
 
   const result = await courseService.updateCourseById(
-    courseId,
+    decryptedCourseId,
     course_name,
     course_code,
     batch_id,
@@ -135,6 +139,7 @@ const removeStaffCourse = async (req, res) => {
 module.exports = {
   createCourse,
   getAllCourses,
+  getCourseById,
   updateCourseById,
   assignCourseToStaff,
   getStaffCourses,
