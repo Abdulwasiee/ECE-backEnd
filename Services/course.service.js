@@ -1,4 +1,5 @@
 const { query } = require("../Config/database.config");
+const { sendAssignmentEmail } = require("./email.service");
 
 const createCourse = async (
   courseName,
@@ -67,7 +68,6 @@ const createCourse = async (
 };
 
 const getAllCourses = async (batchId, semesterId, streamId = null) => {
-  console.log(batchId, semesterId, streamId);
   if (!batchId || !semesterId) {
     return { success: false, message: "Batch ID and semester ID are required" };
   }
@@ -230,9 +230,10 @@ const getCourseById = async (courseId) => {
 const assignCourseToStaff = async (user_id, batch_course_id) => {
   // Step 1: Fetch the course details from the batch_courses table
   const fetchCourseDetailsSql = `
-    SELECT course_id, batch_id, stream_id, semester_id
-    FROM batch_courses
-    WHERE batch_course_id = ?;
+    SELECT bc.course_id, bc.batch_id, bc.stream_id, bc.semester_id, c.course_name, c.course_code
+    FROM batch_courses bc
+    JOIN courses c ON bc.course_id = c.course_id
+    WHERE bc.batch_course_id = ?;
   `;
 
   try {
@@ -247,15 +248,21 @@ const assignCourseToStaff = async (user_id, batch_course_id) => {
     }
 
     // Destructure the first (and only) result from the query
-    const { course_id, batch_id, stream_id, semester_id } = courseDetails[0];
+    const {
+      course_id,
+      batch_id,
+      stream_id,
+      semester_id,
+      course_name,
+      course_code,
+    } = courseDetails[0];
 
-    // Step 2: Insert into staff_courses table
+    // Insert into staff_courses table
     const assignCourseSql = `
       INSERT INTO staff_courses (user_id, course_id, batch_id, stream_id, semester_id)
       VALUES (?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE course_id = VALUES(course_id), batch_id = VALUES(batch_id), stream_id = VALUES(stream_id), semester_id = VALUES(semester_id);
     `;
-
     await query(assignCourseSql, [
       user_id,
       course_id,
@@ -264,18 +271,54 @@ const assignCourseToStaff = async (user_id, batch_course_id) => {
       semester_id,
     ]);
 
-    // Step 3: Insert into staff_batches table
+    //  Insert into staff_batches table
     const assignBatchSql = `
       INSERT INTO staff_batches (user_id, batch_id, stream_id, semester_id)
       VALUES (?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE stream_id = VALUES(stream_id), semester_id = VALUES(semester_id);
     `;
-
     await query(assignBatchSql, [user_id, batch_id, stream_id, semester_id]);
+
+    //  Fetch user details for the email
+    const fetchUserSql = `SELECT name, email FROM users WHERE user_id = ?`;
+    const user = await query(fetchUserSql, [user_id]);
+
+    if (user.length === 0) {
+      return {
+        success: false,
+        message: "User not found for the provided user_id.",
+      };
+    }
+
+    const { name, email } = user[0];
+
+    //  Fetch batch year and stream name for the email
+    const batchYearSql = `SELECT batch_year FROM batches WHERE batch_id = ?`;
+    const streamNameSql = `SELECT stream_name FROM streams WHERE stream_id = ?`;
+
+    const batchYear = await query(batchYearSql, [batch_id]);
+    const streamName = await query(streamNameSql, [stream_id]);
+
+    //  Send assignment email
+    try {
+      await sendAssignmentEmail(
+        name,
+        email,
+        { course_name, course_code },
+        batchYear[0]?.batch_year,
+        streamName[0]?.stream_name || null
+      );
+    } catch (emailError) {
+      console.error("Error sending assignment email:", emailError);
+      return {
+        success: true,
+        message: "Course assigned to staff, but email failed to send.",
+      };
+    }
 
     return {
       success: true,
-      message: "Course assigned to staff successfully.",
+      message: "Course assigned to staff successfully, and email sent.",
     };
   } catch (error) {
     return {
@@ -284,6 +327,7 @@ const assignCourseToStaff = async (user_id, batch_course_id) => {
     };
   }
 };
+
 const getStaffCourses = async (user_id) => {
   const getCoursesSql = `
     SELECT 
@@ -346,7 +390,6 @@ const getStaffCourses = async (user_id) => {
 };
 
 const removeStaffCourse = async (user_id, course_id) => {
-  console.log(user_id, course_id);
   const fetchDetailsSql = `
     SELECT batch_id, stream_id, semester_id
     FROM staff_courses

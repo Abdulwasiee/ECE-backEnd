@@ -33,21 +33,17 @@ const userExists = async (id_number, email) => {
   }
 };
 
-// Function to create a new user
 const createUser = async (userData, reqUser) => {
   // Validate the provided user data
-  const validation = await validateUserData(userData);
-  if (!validation.success) {
-    return validation;
-  }
+  const { success, ...validation } = await validateUserData(userData);
+  if (!success) return validation;
 
-  // Destructure the user data
-  let {
+  const {
     role_id,
     id_number,
     name,
     email,
-    batch_id,
+    batch_id: providedBatchId,
     course_id,
     stream_id,
     semester_id,
@@ -57,126 +53,116 @@ const createUser = async (userData, reqUser) => {
     // Check if the user already exists by ID number or email
     const exists = await userExists(id_number, email);
     if (exists) {
-      if (role_id == 3) {
-        return {
-          success: false,
-          message:
-            "A staff member with this information already exists. Navigate to courses and try to assign a course.",
-        };
-      }
-      return {
-        success: false,
-        message: "User with this ID number or email already exists.",
-      };
+      const message =
+        role_id === 3
+          ? "A staff member with this information already exists. Navigate to courses and try to assign a course."
+          : "User with this ID number or email already exists.";
+      return { success: false, message };
     }
 
-    // If the representative is creating the user, assign their batch to the user
-    if (reqUser.role_id === 5) {
-      batch_id = reqUser.batch_ids[0]; // Assume representative has access to only one batch
-    }
+    // Assign representative's batch if necessary
+    const batch_id =
+      reqUser.role_id === 5 ? reqUser.batch_ids[0] : providedBatchId;
 
-    // Generate a random 8-digit password
-    const generatedPassword = crypto.randomBytes(4).toString("hex"); // Generate 8 hexadecimal characters
+    // Generate and hash password
+    const generatedPassword = crypto.randomBytes(4).toString("hex");
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
-    // Insert the new user into the users table
-    const sql = `
-      INSERT INTO users (role_id, id_number, name, email, password, batch_id, stream_id, semester_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const result = await query(sql, [
-      role_id,
-      id_number,
-      name,
-      email,
-      hashedPassword,
-      batch_id || null,
-      stream_id || null,
-      semester_id || null,
-    ]);
+    // Send email before database insert
+    let emailSent = false;
+    try {
+      const assignedCourse = await query(
+        `SELECT course_name, course_code FROM courses WHERE course_id = ?`,
+        [course_id]
+      );
+      const batchYear = await query(
+        `SELECT batch_year FROM batches WHERE batch_id = ?`,
+        [batch_id]
+      );
+      const streamName = await query(
+        `SELECT stream_name FROM streams WHERE stream_id = ?`,
+        [stream_id]
+      );
 
-    if (result.affectedRows > 0) {
-      const userId = result.insertId;
+      await sendEmail(
+        name,
+        email,
+        generatedPassword,
+        role_id,
+        assignedCourse[0],
+        batchYear[0]?.batch_year,
+        streamName[0]
+      );
+      emailSent = true;
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      return { success: false, message: "Failed to send email." };
+    }
 
-      // Handle staff batch, stream, and course assignments if the role is staff
-      if (role_id == 3) {
-        await query(
-          `
-          INSERT INTO staff_batches (user_id, batch_id, stream_id, semester_id)
-          VALUES (?, ?, ?, ?)
-          ON DUPLICATE KEY UPDATE batch_id = ?, stream_id = ?, semester_id = ?
-        `,
-          [
-            userId,
-            batch_id,
-            stream_id,
-            semester_id,
-            batch_id,
-            stream_id || null,
-            semester_id,
-          ]
-        );
+    if (emailSent) {
+      // Insert the new user into the database
+      const sql = `
+        INSERT INTO users (role_id, id_number, name, email, password, batch_id, stream_id, semester_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      const result = await query(sql, [
+        role_id,
+        id_number,
+        name,
+        email,
+        hashedPassword,
+        batch_id || null,
+        stream_id || null,
+        semester_id || null,
+      ]);
 
-        if (course_id) {
+      if (result.affectedRows > 0) {
+        const userId = result.insertId;
+
+        // Assign staff batch, stream, and course if applicable
+        if (role_id === 3) {
           await query(
             `
-            INSERT INTO staff_courses (user_id, course_id, batch_id, stream_id, semester_id)
-            VALUES (?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE course_id = ?, batch_id = ?, stream_id = ?, semester_id = ?
-          `,
+            INSERT INTO staff_batches (user_id, batch_id, stream_id, semester_id)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE batch_id = ?, stream_id = ?, semester_id = ?`,
             [
               userId,
-              course_id,
               batch_id,
               stream_id,
               semester_id,
-              course_id,
               batch_id,
               stream_id || null,
               semester_id,
             ]
           );
+
+          if (course_id) {
+            await query(
+              `
+              INSERT INTO staff_courses (user_id, course_id, batch_id, stream_id, semester_id)
+              VALUES (?, ?, ?, ?, ?)
+              ON DUPLICATE KEY UPDATE course_id = ?, batch_id = ?, stream_id = ?, semester_id = ?`,
+              [
+                userId,
+                course_id,
+                batch_id,
+                stream_id,
+                semester_id,
+                course_id,
+                batch_id,
+                stream_id || null,
+                semester_id,
+              ]
+            );
+          }
         }
+
+        return { success: true, message: "User created successfully.", userId };
       }
-
-      const courseSql = `SELECT course_name ,course_code FROM courses WHERE course_id = ?`;
-      const fetchStreamName = `
-  SELECT stream_name 
-  FROM streams 
-  WHERE stream_id = ?;
-`;
-
-      const fetchBatchYear = `
-  SELECT batch_year 
-  FROM batches 
-  WHERE batch_id = ?;
-`;
-
-      try {
-        const assignedCourse = await query(courseSql, [course_id]);
-        const batchYear = await query(fetchBatchYear, [batch_id]);
-        const StreamName = await query(fetchStreamName, [stream_id]);
-        await sendEmail(
-          name,
-          email,
-          generatedPassword,
-          role_id,
-          assignedCourse[0],
-          batchYear[0].batch_year,
-          StreamName[0]
-        );
-      } catch (emailError) {
-        console.error("Error sending email:", emailError);
-      }
-
-      return {
-        success: true,
-        message: "User created successfully and email sent.",
-        userId: userId,
-      };
-    } else {
-      return { success: false, message: "User creation failed." };
     }
+
+    return { success: false, message: "User creation failed." };
   } catch (error) {
     console.error("Error creating user:", error);
     return { success: false, message: error.message || "An error occurred." };

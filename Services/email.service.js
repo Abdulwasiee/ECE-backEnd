@@ -12,7 +12,7 @@ const sendEmail = async (
   stream
 ) => {
 
-  console.log(stream)
+
   try {
     // Create transporter for sending email
     let transporter = nodemailer.createTransport({
@@ -66,7 +66,6 @@ Hawassa University`,
 
     // Send the email for user creation
     await transporter.sendMail(mailOptions);
-    console.log("User creation email sent successfully");
   } catch (error) {
     console.error("Error sending email:", error);
     throw error; // Handle error
@@ -113,7 +112,6 @@ Hawassa University`,
 
     // Send the assignment notification email
     await transporter.sendMail(mailOptions);
-    console.log("Course assignment email sent successfully");
   } catch (error) {
     console.error("Error sending assignment email:", error);
     throw error;
