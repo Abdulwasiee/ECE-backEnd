@@ -154,11 +154,11 @@ const updateCourseById = async (
   }
 
   const updateCourseSql = `UPDATE courses SET course_name = ?, course_code = ? WHERE course_id = ?`;
-  const updateBatchCourseSql = `
-    INSERT INTO batch_courses (batch_id, course_id, stream_id, semester_id)
-    VALUES (?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE batch_id = VALUES(batch_id), stream_id = VALUES(stream_id), semester_id = VALUES(semester_id);
-  `;
+const updateBatchCourseSql = `
+  UPDATE batch_courses
+  SET batch_id = ?, stream_id = ?, semester_id = ?
+  WHERE course_id = ?;
+`;
 
   try {
     // Update the course name and code
@@ -167,9 +167,9 @@ const updateCourseById = async (
     // Update the batch_courses table with the new details
     await query(updateBatchCourseSql, [
       batchId,
-      courseId,
       streamId,
       semesterId,
+      courseId,
     ]);
 
     return { success: true, message: "Course updated successfully" };
