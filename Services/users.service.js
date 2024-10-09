@@ -1,7 +1,7 @@
 const { query } = require("../Config/database.config");
 const bcrypt = require("bcrypt");
-const { sendEmail } = require("../Services/email.service"); 
-const crypto = require("crypto"); 
+const { sendEmail } = require("../Services/email.service");
+const crypto = require("crypto");
 
 // Helper function to validate required fields
 const validateUserData = async (userData) => {
@@ -139,9 +139,32 @@ const createUser = async (userData, reqUser) => {
         }
       }
 
-      // Send an email to the user with their account details
+      const courseSql = `SELECT course_name ,course_code FROM courses WHERE course_id = ?`;
+      const fetchStreamName = `
+  SELECT stream_name 
+  FROM streams 
+  WHERE stream_id = ?;
+`;
+
+      const fetchBatchYear = `
+  SELECT batch_year 
+  FROM batches 
+  WHERE batch_id = ?;
+`;
+
       try {
-        await sendEmail(name, email, generatedPassword, role_id); // Send the generated password
+        const assignedCourse = await query(courseSql, [course_id]);
+        const batchYear = await query(fetchBatchYear, [batch_id]);
+        const StreamName = await query(fetchStreamName, [stream_id]);
+        await sendEmail(
+          name,
+          email,
+          generatedPassword,
+          role_id,
+          assignedCourse[0],
+          batchYear[0].batch_year,
+          StreamName[0]
+        );
       } catch (emailError) {
         console.error("Error sending email:", emailError);
       }
