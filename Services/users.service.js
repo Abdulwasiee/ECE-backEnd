@@ -358,7 +358,8 @@ const deleteUserById = async (userId) => {
     return { success: false, message: error.message };
   }
 };
-const getStaffDetails = async (semester_id, batch_id, stream_id = null) => {
+const getStaffDetails = async (semester_id, batch_id, stream_id) => {
+  console.log(semester_id, batch_id, stream_id);
   // Base query to fetch staff details
   let baseQuery = `
   SELECT 

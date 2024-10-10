@@ -20,6 +20,9 @@ const getAllUsers = async (req, res) => {
     stream_id = reqUser.stream_id != null ? reqUser.stream_id : null;
     batch_id = reqUser.batch_ids[0];
     role_id = 3;
+    if (batch_id == 3 && semester_id == 2) {
+      semester_id = 1;
+    }
   } else {
     role_id = req.params.role_id;
     stream_id = req.query.stream_id || null;
@@ -29,7 +32,7 @@ const getAllUsers = async (req, res) => {
   try {
     const result = await userService.getAllUsers(
       role_id,
-      semester_id,
+      semester_id || null,
       batch_id,
       stream_id
     );
