@@ -89,11 +89,11 @@ const assignCourseToStaff = async (req, res) => {
       message: "Missing required fields",
     });
   }
-
+  const decryptedCourseId = decrypt(batch_course_id);
   try {
     const result = await courseService.assignCourseToStaff(
       user_id,
-      batch_course_id
+      decryptedCourseId
     );
     return res.json({
       result,
@@ -126,10 +126,13 @@ const getStaffCourses = async (req, res) => {
 // Controller to remove a course assignment for a staff member
 const removeStaffCourse = async (req, res) => {
   const { user_id, course_id } = req.query;
-  console.log(user_id, course_id);
+  const decryptedCourseId = decrypt(course_id);
 
   try {
-    const result = await courseService.removeStaffCourse(user_id, course_id);
+    const result = await courseService.removeStaffCourse(
+      user_id,
+      decryptedCourseId
+    );
     return res.json({
       result,
     });

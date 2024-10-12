@@ -1,3 +1,4 @@
+const { decrypt } = require("../Services/decyptor.service");
 const userService = require("../Services/users.service");
 
 // Create a new user
@@ -98,7 +99,8 @@ const deleteUserById = async (req, res) => {
 
 const assignedStaff = async (req, res) => {
   const { courseId } = req.query;
-  const response = await userService.assignedStaff(courseId);
+  const decrytedCourseId = decrypt(courseId);
+  const response = await userService.assignedStaff(decrytedCourseId);
   return res.json({ response });
 };
 module.exports = {
