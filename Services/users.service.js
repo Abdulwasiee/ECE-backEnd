@@ -120,7 +120,7 @@ const createUser = async (userData, reqUser) => {
         const userId = result.insertId;
 
         // Assign staff batch, stream, and course if applicable
-        if (role_id === 3) {
+        if (role_id ==3) {
           await query(
             `
             INSERT INTO staff_batches (user_id, batch_id, stream_id, semester_id)
