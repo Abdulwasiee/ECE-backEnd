@@ -359,7 +359,7 @@ const deleteUserById = async (userId) => {
   }
 };
 const getStaffDetails = async (semester_id, batch_id, stream_id) => {
-  console.log(semester_id, batch_id, stream_id);
+
   // Base query to fetch staff details
   let baseQuery = `
   SELECT 
@@ -455,10 +455,10 @@ WHERE
     `;
 
   try {
-    console.log(`Querying assigned staff for course ID: ${courseId}`);
+
     const results = await query(sql, [courseId]);
 
-    console.log("Query results:", results); // Log the results for debugging
+   
 
     return {
       success: true,

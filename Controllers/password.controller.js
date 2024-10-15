@@ -60,7 +60,6 @@ const sendPasswordResetEmail = async (req, res) => {
 // Controller to reset the password
 const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
-console.log(req.body);
   try {
     const result = await resetNewPassword(token, newPassword);
     return res.json(result);

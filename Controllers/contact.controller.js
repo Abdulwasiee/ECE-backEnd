@@ -64,7 +64,6 @@ const updateContactInfo = async (req, res) => {
 // Controller function to delete contact information by userId
 const deleteContactInfo = async (req, res) => {
   const { userId } = req.params;
-  console.log(userId);
 
   try {
     const result = await contactService.deleteContactInformation(userId);

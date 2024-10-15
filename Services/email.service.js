@@ -149,7 +149,6 @@ Hawassa University`,
 
     // Send the password reset email
     await transporter.sendMail(mailOptions);
-    console.log("Password reset email sent successfully.");
   } catch (error) {
     console.error("Error sending password reset email:", error);
     throw error;

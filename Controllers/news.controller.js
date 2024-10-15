@@ -94,7 +94,7 @@ const updateNewsById = async (req, res) => {
 // Delete News
 const deleteNewsById = async (req, res) => {
   const { newsId } = req.params;
-  console.log(newsId);
+
   try {
     const result = await deleteNews(newsId);
 
