@@ -117,5 +117,44 @@ Hawassa University`,
     throw error;
   }
 };
+// Email service to send password reset email
+const sendPasswordResetEmail = async (userEmail, resetLink) => {
+  try {
+    // Create transporter for sending email
+    let transporter = nodemailer.createTransport({
+      service: "gmail", // Use another email service if needed (e.g., Outlook, Yahoo)
+      auth: {
+        user: process.env.ADMIN_EMAIL, // Admin email address
+        pass: process.env.ADMIN_EMAIL_PASSWORD, // Admin email password from .env
+      },
+    });
 
-module.exports = { sendEmail, sendAssignmentEmail };
+    // Define mail options for password reset email
+    let mailOptions = {
+      from: process.env.ADMIN_EMAIL, // Admin's email address
+      to: userEmail, // User's email address
+      subject: "Password Reset Request",
+      text: `Hello,
+
+We received a request to reset your password. You can reset your password by clicking the link below:
+
+${resetLink}
+
+This link will expire in 15 minutes. If you did not request a password reset, please ignore this email.
+
+Regards,
+ECE Department,
+Hawassa University`,
+    };
+
+    // Send the password reset email
+    await transporter.sendMail(mailOptions);
+    console.log("Password reset email sent successfully.");
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    throw error;
+  }
+};
+
+
+module.exports = { sendEmail, sendAssignmentEmail , sendPasswordResetEmail};

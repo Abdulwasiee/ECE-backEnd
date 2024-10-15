@@ -11,4 +11,8 @@ router.post(
   password.changePassword
 );
 
+router.post("/api/requestPasswordReset", password.sendPasswordResetEmail);
+
+router.post("/api/resetPassword", password.resetPassword);
+
 module.exports = router;

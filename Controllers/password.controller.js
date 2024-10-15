@@ -1,4 +1,4 @@
-const { changePasswordService } = require("../Services/password.service");
+const { changePasswordService, requestPasswordReset, resetNewPassword } = require("../Services/password.service");
 
 const changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
@@ -40,4 +40,37 @@ const changePassword = async (req, res) => {
     });
   }
 };
-module.exports = { changePassword };
+
+
+// Controller to send password reset email
+const sendPasswordResetEmail = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const result = await requestPasswordReset(email);
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while sending the password reset email.",
+    });
+  }
+};
+
+// Controller to reset the password
+const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+console.log(req.body);
+  try {
+    const result = await resetNewPassword(token, newPassword);
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while resetting the password.",
+    });
+  }
+};
+
+
+module.exports = { changePassword,sendPasswordResetEmail,resetPassword };
