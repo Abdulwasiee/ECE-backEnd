@@ -11,8 +11,6 @@ const sendEmail = async (
   batchYear,
   stream
 ) => {
-
-
   try {
     // Create transporter for sending email
     let transporter = nodemailer.createTransport({
@@ -46,10 +44,10 @@ const sendEmail = async (
     let mailOptions = {
       from: process.env.ADMIN_EMAIL,
       to: userEmail, // New user's email address
-      subject: "Welcome to the ECE Department at Hawassa University",
+      subject: "Welcome to the ECE Department at Glendale University",
       text: `Hello ${userFirstName},
 
-Welcome to the Electrical and Computer Engineering (ECE) department at Hawassa University!
+Welcome to the Electrical and Computer Engineering (ECE) department at Glendale University!
 
 Your account has been created. ${roleDescription} ${additionalInfo} You can now access the department's Website using the following credentials:
 
@@ -57,11 +55,11 @@ Email: ${userEmail}
 Password: ${userPassword}
 You can change your password after login and navigate to the profile page.
 
-Please log in to the system at the following website: http://electrical.et.hu.com.
+Please log in to the system at the following website: http://electrical.glendale-uni.com.
 
 Regards,
 ECE Department,
-Hawassa University`,
+Glendale University`,
     };
 
     // Send the email for user creation
@@ -97,7 +95,7 @@ const sendAssignmentEmail = async (
       subject: "Course Assignment Notification",
       text: `Hello ${userFirstName},
 
-You have been assigned a new course in the Electrical and Computer Engineering (ECE) department at Hawassa University!
+You have been assigned a new course in the Electrical and Computer Engineering (ECE) department at Glendale University!
 
 Course: ${assignedCourse.course_name} (${assignedCourse.course_code})
 Batch Year: ${batchYear}
@@ -107,7 +105,7 @@ Please ensure you review the course details and get in touch if you have any que
 
 Regards,
 ECE Department,
-Hawassa University`,
+Glendale University`,
     };
 
     // Send the assignment notification email
@@ -117,6 +115,7 @@ Hawassa University`,
     throw error;
   }
 };
+
 // Email service to send password reset email
 const sendPasswordResetEmail = async (userEmail, resetLink) => {
   try {
@@ -144,7 +143,7 @@ This link will expire in 15 minutes. If you did not request a password reset, pl
 
 Regards,
 ECE Department,
-Hawassa University`,
+Glendale University`,
     };
 
     // Send the password reset email
@@ -155,5 +154,4 @@ Hawassa University`,
   }
 };
 
-
-module.exports = { sendEmail, sendAssignmentEmail , sendPasswordResetEmail};
+module.exports = { sendEmail, sendAssignmentEmail, sendPasswordResetEmail };
