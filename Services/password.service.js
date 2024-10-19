@@ -66,7 +66,7 @@ const requestPasswordReset = async (email) => {
     });
 
     // Construct reset link
-    const resetLink = `https://electrical-engineering-by-abdu.netlify.app/${token}`;
+    const resetLink = `https://electrical-engineering-by-abdu.netlify.app/resetPassword/${token}`;
 
     // Send password reset email with the token
     await sendPasswordResetEmail(userEmail, resetLink);
