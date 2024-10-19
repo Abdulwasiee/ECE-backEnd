@@ -228,7 +228,7 @@ ON DUPLICATE KEY UPDATE stream_name=VALUES(stream_name);
 
 // Insert admin user with hashed password
 const insertAdminUser = async () => {
-  const hashedPassword = await bcrypt.hash("adminpassword", 10);
+  const hashedPassword = await bcrypt.hash("12345678", 10);
 
   const query = `
     INSERT INTO users (role_id, id_number, name, email, password)
