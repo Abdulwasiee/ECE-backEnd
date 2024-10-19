@@ -3,7 +3,7 @@ const {
   sendPasswordResetEmail,
   resetPassword,
   changePassword,
-} = require("../controllers/password.controller");
+} = require("../Controllers/pass.controller");
 const { authMiddleware } = require("../Middlewire/Auth");
 
 const router = express.Router();
