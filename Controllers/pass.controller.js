@@ -1,7 +1,7 @@
 const { changePasswordService, requestPasswordReset, resetNewPassword } = require("../Services/password.service");
 
 const changePassword = async (req, res) => {
-  const { oldPassword, newPassword } = req.body;z
+  const { oldPassword, newPassword } = req.body;
   const userId = req.user.user_id;
 
   if (!oldPassword || !newPassword) {
